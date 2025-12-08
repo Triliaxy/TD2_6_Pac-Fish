@@ -8,4 +8,19 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Sprites\Popcat\popcat.gif" />
+    <None Remove="Sprites\Popcat\popcat1.png" />
+    <None Remove="Sprites\Popcat\popcat2.gif" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Sprites\Popcat\popcat.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Sprites\Popcat\popcat2.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
 </Project>
