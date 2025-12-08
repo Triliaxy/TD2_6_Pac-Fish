@@ -2,15 +2,38 @@
 
 Note : Triliaxy est Rémy GONZALEZ PAULO
 
+TODO :
+  - Recherche d’images
+  - Mise en place des UC
+
+
 **Seance 1 : brainstorm**
 
-Jeu : pacman like
-Idees : Jeu de type pacman, le joueur incarne un poisson, il est chasse par des chats. Quand le joueur prend une orbe, ici des stéroïdes, le poisson devient un requin et ainsi peut manger les chats.
+Jeu : pac-man like
+
+Idees : 
+  Jeu de type pacman : le joueur incarne un poisson, il est chassé par des chats. Quand le joueur prend une orbe, ici des stéroïdes, le poisson devient temporairement un requin et ainsi peut manger les chats.
+  Chaque point récupéré est un point ajouté dans la boutique ( points x1.5 en hard mode )
+  Une boutique est accessible, dedans on peut acheter les skins ( possibilité d’achat du hard mode si le temps est suffisant )
+  Le jeu doit comporter un système de sauvegarde, comportant :
+    - La sauvegarde de la monnaie
+    - La sauvegarde des skins débloqués
+    - La sauvegarde du hard mode ( débloqué ou non )
+    
+  
+
 Ecrans :
   - Ecran acceuil ( achat skin, difficulte, parametres)
   - Ecran de parametres
   - Ecran de jeu
+  - Ecran de difficulté
   - Ecran de fin de partie
+  - Ecran boutique
+  - Ecran de choix de skin
   - Ecran de credits
- 
+
+Tableaux :
+  - Chats ( un par skin )
+  - Poisson
+
 
