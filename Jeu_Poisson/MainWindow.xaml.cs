@@ -80,6 +80,9 @@ namespace Jeu_Poisson
         {
             UCParamètres uc = new UCParamètres();
             ZoneJeu.Content = uc;
+
+            uc.butRetourPara.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
+            uc.butValiderPara.Click += AfficheAcceuil; //quand on clique sur le bouton valider, on affiche la page d'acceuil
         }
         
         private RoutedEventHandler Fermer() //ferme l'application
