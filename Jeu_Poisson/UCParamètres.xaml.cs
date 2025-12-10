@@ -22,5 +22,22 @@ namespace Jeu_Poisson
         {
             InitializeComponent();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            string codeEntre = Textbox_codeTriche.Text;
+            if (codeEntre == "steve")
+            {
+                Console.WriteLine("oui"); // à modifier avec la page debug
+            }
+        }
+
+        private void Textbox_codeTriche_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (Textbox_codeTriche.Text == "Entrez votre code")
+            {
+                Textbox_codeTriche.Text = "";
+            }
+        }
     }
 }

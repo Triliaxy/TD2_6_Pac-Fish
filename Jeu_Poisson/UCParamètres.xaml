@@ -7,6 +7,52 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-            
+
+        <Canvas Margin="122,83,122,114">
+            <TextBox x:Name="Textbox_codeTriche" GotFocus="Textbox_codeTriche_GotFocus" TextWrapping="Wrap" Text="Entrez votre code" Width="179" Height="41" HorizontalAlignment="Left" Canvas.Left="170" Canvas.Top="39" VerticalAlignment="Center" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#FFA5A7AD" Foreground="#FF968484"/>
+            <!-- apparence par défaut -->
+            <Label Content="Code de triche" Canvas.Left="61" Canvas.Top="40" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="100" HorizontalContentAlignment="Center" FontSize="14" Foreground="#FF00B3FF" VerticalContentAlignment="Center">
+                <Label.Background>
+                    <SolidColorBrush Color="Black" Opacity="0"/>
+                </Label.Background>
+            </Label>
+            <Button x:Name="Btn_utiliser" Content="Utiliser" Click="Button_Click" HorizontalAlignment="Left" Canvas.Left="376" Canvas.Top="46" VerticalAlignment="Top" Height="30" Width="60">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}">
+                        <!-- apparence par défaut -->
+                        <Setter Property="Background" Value="Black" />
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="BorderBrush" Value="White" />
+                        <Setter Property="BorderThickness" Value="1,1,1,1"/>
+
+                        <!--style à garder pour les boutons -->
+                        <Setter Property="Template">
+                            <!--retire l’apparence par défaut -->
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <!-- dessine le fond et bord à partir des paramètres passés à l’initialisation -->
+                                    <Border Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}" 
+                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                        <!-- affiche le texte -->
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+
+                        <Style.Triggers>
+                            <!-- gestion du hover -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#abb3b0"/>
+                                <Setter Property="Foreground" Value="Black"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+        </Canvas>
+
     </Grid>
 </UserControl>
