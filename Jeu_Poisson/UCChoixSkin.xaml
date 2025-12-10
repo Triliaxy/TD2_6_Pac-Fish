@@ -7,6 +7,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="434" d:DesignWidth="800">
     <Grid>
-            
+        <Button x:Name="ButLaunch" Content="C'est parti !" HorizontalAlignment="Left" Margin="535,370,0,0" VerticalAlignment="Top" Width="111" Height="39"/>
+        <Button x:Name="butRetourSkin" Content="Retour" HorizontalAlignment="Left" Margin="233,370,0,0" VerticalAlignment="Top" Height="39" Width="111" Click="butRetourSkin_Click"/>
+
+
+
     </Grid>
 </UserControl>

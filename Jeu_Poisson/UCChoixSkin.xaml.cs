@@ -22,5 +22,10 @@ namespace Jeu_Poisson
         {
             InitializeComponent();
         }
+
+        private void butRetourSkin_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

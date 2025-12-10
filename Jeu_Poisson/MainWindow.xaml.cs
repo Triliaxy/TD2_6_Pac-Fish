@@ -22,14 +22,14 @@ namespace Jeu_Poisson
             AfficheDemarrage();
         }
 
-        public void AfficheDemarrage() //affiche la page de démarrage
+        private void AfficheDemarrage() //affiche la page de démarrage
         {
             UCDemarrage uc = new UCDemarrage();
             ZoneJeu.Content = uc;
-            uc.butStart.Click += (sender, e) => AfficheAcceuil(); //quand on clique sur le bouton start, on affiche la page d'acceuil, comprendre la syntaxe de cette ligne
+            uc.butStart.Click += AfficheAcceuil; //quand on clique sur le bouton start, on affiche la page d'acceuil
         }
 
-        private void AfficheAcceuil()
+        private void AfficheAcceuil(object sender, RoutedEventArgs e) //affiche la page d'acceuil
         {
             UCacceuil uc = new UCacceuil();
             ZoneJeu.Content = uc;
@@ -49,16 +49,32 @@ namespace Jeu_Poisson
         {
             UCChoixSkin uc = new UCChoixSkin();
             ZoneJeu.Content = uc;
+
+            uc.butRetourSkin.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
+
+            uc.ButLaunch.Click += AfficheJeu; //quand on clique sur le bouton lancer, on affiche le jeu
         }
+
+        private void AfficheJeu(object sender, RoutedEventArgs e) //affiche la page du jeu
+        {
+            UCJeu uc = new UCJeu();
+            ZoneJeu.Content = uc;
+        }
+
         private void AfficheChoixDifficulte(object sender, RoutedEventArgs e) //affiche la page de choix des difficultés
         {
             UCDifficultés uc = new UCDifficultés();
             ZoneJeu.Content = uc;
+
+            uc.butRetourDiff.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
+            uc.butValiderDiff.Click += AfficheAcceuil; //quand on clique sur le bouton valider, on affiche la page d'acceuil
         }
         private void AfficheBoutique(object sender, RoutedEventArgs e) //affiche la page de la boutique
         {
             UCBoutique uc = new UCBoutique();
             ZoneJeu.Content = uc;
+
+            uc.butRetourBoutique.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
         }
         private void AfficheParametres(object sender, RoutedEventArgs e) //affiche la page des paramètres
         {
