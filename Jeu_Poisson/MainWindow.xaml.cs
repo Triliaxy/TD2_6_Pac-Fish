@@ -19,10 +19,17 @@ namespace Jeu_Poisson
         public MainWindow()
         {
             InitializeComponent();
-            AfficheAcceuil();
+            AfficheDemarrage();
         }
 
-        public void AfficheAcceuil() //affiche la page d'acceuil
+        public void AfficheDemarrage() //affiche la page de démarrage
+        {
+            UCDemarrage uc = new UCDemarrage();
+            ZoneJeu.Content = uc;
+            uc.butStart.Click += (sender, e) => AfficheAcceuil(); //quand on clique sur le bouton start, on affiche la page d'acceuil, comprendre la syntaxe de cette ligne
+        }
+
+        private void AfficheAcceuil()
         {
             UCacceuil uc = new UCacceuil();
             ZoneJeu.Content = uc;
@@ -37,6 +44,7 @@ namespace Jeu_Poisson
 
             uc.butQuit.Click += Fermer(); //quand on clique sur le bouton quitter, on ferme l'application
         }
+
         private void AfficheChoixSkin(object sender, RoutedEventArgs e) //affiche la page de choix des skins
         {
             UCChoixSkin uc = new UCChoixSkin();
