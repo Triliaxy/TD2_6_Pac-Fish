@@ -1,10 +1,13 @@
 # Jeu poisson sae 101_102
 
 Note : Triliaxy est Rémy GONZALEZ PAULO
+TheoM74 est Théo MAUHIN
 
 TODO :
   - Recherche d’images
-  - Mise en place des UC
+  - Trouver fond écran
+  - Redimenssionner button taille et taille texte pour harmoniser
+  - Mettre en place choix skin, choix dans boutique, et écran de fin de partie
 
 
 **Seance 1 : brainstorm**
