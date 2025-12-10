@@ -14,16 +14,16 @@ using System.Windows.Shapes;
 namespace Jeu_Poisson
 {
     /// <summary>
-    /// Logique d'interaction pour UCChoixSkin.xaml
+    /// Logique d'interaction pour UCDemarrage.xaml
     /// </summary>
-    public partial class UCChoixSkin : UserControl
+    public partial class UCDemarrage : UserControl
     {
-        public UCChoixSkin()
+        public UCDemarrage()
         {
             InitializeComponent();
         }
 
-        private void butRetourSkin_Click(object sender, RoutedEventArgs e)
+        private void butStart_Click(object sender, RoutedEventArgs e)
         {
 
         }
