@@ -15,8 +15,10 @@ namespace Pac_Fish
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+
     public partial class MainWindow : Window
     {
+        public static bool steve { get; set; } = false; //var pour savoir si le cheat code est ok
         public MainWindow()
         {
             InitializeComponent();
@@ -84,6 +86,17 @@ namespace Pac_Fish
 
             uc.butRetourPara.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
             uc.butValiderPara.Click += AfficheAcceuil; //quand on clique sur le bouton valider, on affiche la page d'acceuil
+            uc.Btn_utiliser.Click += AfficheDebug; //quand on clique sur le bouton utiliser, on affiche la page de debug
+        }
+        
+        private void AfficheDebug(object sender, RoutedEventArgs e) //affiche la page de debug
+        {
+            //faire la vérification du code de triche ici avant d'afficher la page de debug
+            if (MainWindow.steve)
+            {
+                UCDebug uc = new UCDebug();
+                ZoneJeu.Content = uc;
+            }
         }
 
         private RoutedEventHandler Fermer() //ferme l'application
