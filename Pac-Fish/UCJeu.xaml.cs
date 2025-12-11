@@ -34,18 +34,30 @@ namespace Pac_Fish
             Application.Current.MainWindow.KeyUp += canvasJeu_KeyUp;
         }
 
-        private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         private void canvasJeu_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Right)
+            switch(e.Key)
             {
-                Canvas.SetLeft(imgPoisson, Canvas.GetLeft(imgPoisson) + MainWindow.PasPoisson);
+                case Key.Up:
+                    Canvas.SetTop(imgPoisson, Canvas.GetTop(imgPoisson) - MainWindow.PasPoisson);
+                    break;
+                case Key.Down:
+                    Canvas.SetTop(imgPoisson, Canvas.GetTop(imgPoisson) + MainWindow.PasPoisson);
+                    break;
+                case Key.Left:
+                    Canvas.SetLeft(imgPoisson, Canvas.GetLeft(imgPoisson) - MainWindow.PasPoisson);
+                    break;
+                case Key.Right:
+                    Canvas.SetLeft(imgPoisson, Canvas.GetLeft(imgPoisson) + MainWindow.PasPoisson);
+                    break;
             }
         }
 
+        private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
+        {
+            
+        }
+
+        
     }
 }

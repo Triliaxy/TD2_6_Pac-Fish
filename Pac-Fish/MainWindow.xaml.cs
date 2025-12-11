@@ -95,15 +95,5 @@ namespace Pac_Fish
         }
 
         
-
-        private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void ZoneJeu_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
     }
 }
