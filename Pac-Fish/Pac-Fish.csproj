@@ -10,8 +10,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Resource Include="PlaceHolders\steve.gif">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Remove="sprites\MaxwellTheCat.gif" />
+    <None Remove="sprites\popcat_gif.gif" />
+    <None Remove="sprites\steve-le-poisson-steve.gif" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="sprites\MaxwellTheCat.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="sprites\popcat_gif.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="sprites\steve-le-poisson-steve.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
 

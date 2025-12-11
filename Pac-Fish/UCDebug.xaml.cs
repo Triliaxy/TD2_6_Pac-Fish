@@ -25,12 +25,6 @@ namespace Pac_Fish
             InitializeComponent();
         }
 
-        //private void MediaElement_MediaEnded(object sender, RoutedEventArgs e)
-        //{
-        //    // Remet la lecture à zéro quand elle est finie
-        //    ((MediaElement)sender).Position = TimeSpan.FromMilliseconds(1);
-        //    ((MediaElement)sender).Play();
-        //}
 
     }
 }

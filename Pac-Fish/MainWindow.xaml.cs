@@ -18,6 +18,7 @@ namespace Pac_Fish
 
     public partial class MainWindow : Window
     {
+        public static bool steve { get; set; } = false; //var globale, get et set autorisent la modification et lecture partout
         public static string Perso { get; set; }
         public static int PasPoisson { get; set; } = 2;
 

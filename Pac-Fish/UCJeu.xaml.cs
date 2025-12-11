@@ -31,6 +31,7 @@ namespace Pac_Fish
     {1,2,2,2,2,2,2,2,2,1},
     {1,1,1,1,1,1,1,1,1,1}
 };
+        //todo : logique de jeu + génération logique
 
         public UCJeu()
         {
@@ -40,6 +41,9 @@ namespace Pac_Fish
             DrawMaze();
 
         }
+
+        //commenter la section ci-dessous
+
         void DrawMaze()
         {
             int tileSize = 30;
