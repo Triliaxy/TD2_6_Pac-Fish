@@ -23,9 +23,19 @@ namespace Jeu_Poisson
             InitializeComponent();
         }
 
-        private void butRetourSkin_Click(object sender, RoutedEventArgs e)
+        private void butSkin1_Click(object sender, RoutedEventArgs e)
         {
-
+            ButLaunch.IsEnabled = true;
+           
         }
+        private void butSkin2_Click(object sender, RoutedEventArgs e)
+        {
+            ButLaunch.IsEnabled = true;
+        }
+        private void butSkin3_Click(object sender, RoutedEventArgs e)
+        {
+            ButLaunch.IsEnabled = true;
+        }
+        
     }
 }

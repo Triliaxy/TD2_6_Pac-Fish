@@ -7,8 +7,12 @@
              mc:Ignorable="d" 
              d:DesignHeight="434" d:DesignWidth="800">
     <Grid>
-        <Button x:Name="ButLaunch" Content="C'est parti !" HorizontalAlignment="Left" Margin="535,370,0,0" VerticalAlignment="Top" Width="111" Height="39"/>
+        <Button x:Name="ButLaunch" Content="C'est parti !" HorizontalAlignment="Left" Margin="535,370,0,0" VerticalAlignment="Top" Width="111" Height="39" IsEnabled="False"/>
         <Button x:Name="butRetourSkin" Content="Retour" HorizontalAlignment="Left" Margin="233,370,0,0" VerticalAlignment="Top" Height="39" Width="111" Click="butRetourSkin_Click"/>
+        <RadioButton x:Name="butSkin1" Content="RadioButton" HorizontalAlignment="Left" Margin="198,80,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="butSkin2" Content="RadioButton" HorizontalAlignment="Left" Margin="567,87,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="butSkin3" Content="RadioButton" HorizontalAlignment="Left" Margin="198,191,0,0" VerticalAlignment="Top"/>
+        <RadioButton x:Name="butSkin4" Content="RadioButton" HorizontalAlignment="Left" Margin="567,179,0,0" VerticalAlignment="Top"/>
 
 
 
