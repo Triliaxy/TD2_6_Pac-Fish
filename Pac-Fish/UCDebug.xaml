@@ -9,7 +9,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
         <!-- prise en charge du gif -->
-        <Image gif:ImageBehavior.AnimatedSource="sprites/MaxwellTheCat.gif"
-               Stretch="None" />
+        <Image gif:ImageBehavior.AnimatedSource="sprites/MaxwellTheCat.gif" Stretch="None" Margin="10,10,515,254" />
+        <Image gif:ImageBehavior.AnimatedSource="/sprites/popcat_gif.gif" Stretch="Fill" Margin="530,10,10,239"/>
     </Grid>
 </UserControl>
