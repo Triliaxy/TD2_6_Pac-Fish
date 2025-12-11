@@ -36,7 +36,7 @@ namespace Pac_Fish
         public UCJeu()
         {
             InitializeComponent();
-            string nomFichierImage = $"pack://application:,,,/PlaceHolders/{MainWindow.Perso}.gif";
+            string nomFichierImage = $"pack://application:,,,/sprites/{MainWindow.Perso}.gif";
             imgPoisson.Source = new BitmapImage(new Uri(nomFichierImage));
             DrawMaze();
 

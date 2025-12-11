@@ -12,7 +12,6 @@
   <ItemGroup>
     <None Remove="sprites\MaxwellTheCat.gif" />
     <None Remove="sprites\popcat_gif.gif" />
-    <None Remove="sprites\steve-le-poisson-steve.gif" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="sprites\steve-le-poisson-steve.gif">
+    <Resource Include="sprites\steve.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
