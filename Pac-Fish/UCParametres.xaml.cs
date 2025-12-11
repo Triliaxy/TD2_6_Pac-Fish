@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+
 namespace Pac_Fish
 {
     /// <summary>
@@ -37,10 +38,13 @@ namespace Pac_Fish
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            
+            
             string codeEntre = Textbox_codeTriche.Text;
             if (codeEntre == "steve")
             {
-                Console.WriteLine("oui"); // à modifier avec la page debug
+                MainWindow.steve = true;
+                
             }
         }
     
