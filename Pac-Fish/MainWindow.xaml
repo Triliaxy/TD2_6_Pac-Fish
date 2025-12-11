@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Pac_Fish"
         mc:Ignorable="d"
         Title="Pac-fish" Height="450" Width="800" Background="Black">
-    <Grid>
+    <Grid Background="Black">
 
     </Grid>
 </Window>
