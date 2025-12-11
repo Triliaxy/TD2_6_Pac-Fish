@@ -7,7 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-
         <Canvas Margin="122,83,122,114">
             <TextBox x:Name="Textbox_codeTriche" GotFocus="Textbox_codeTriche_GotFocus" TextWrapping="Wrap" Text="Entrez votre code" Width="179" Height="41" HorizontalAlignment="Left" Canvas.Left="170" Canvas.Top="39" VerticalAlignment="Center" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#FFA5A7AD" Foreground="#FF968484"/>
             <!-- apparence par défaut -->
@@ -32,8 +31,8 @@
                                 <ControlTemplate TargetType="{x:Type Button}">
                                     <!-- dessine le fond et bord à partir des paramètres passés à l’initialisation -->
                                     <Border Background="{TemplateBinding Background}" 
-                                            BorderBrush="{TemplateBinding BorderBrush}" 
-                                            BorderThickness="{TemplateBinding BorderThickness}">
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}">
                                         <!-- affiche le texte -->
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -16,11 +14,11 @@ using System.Windows.Shapes;
 namespace Pac_Fish
 {
     /// <summary>
-    /// Logique d'interaction pour UCAcceuil.xaml
+    /// Logique d'interaction pour UCacceuil.xaml
     /// </summary>
-    public partial class UCAcceuil : UserControl
+    public partial class UCacceuil : UserControl
     {
-        public UCAcceuil()
+        public UCacceuil()
         {
             InitializeComponent();
         }
