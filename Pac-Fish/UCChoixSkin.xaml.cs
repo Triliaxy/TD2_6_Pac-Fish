@@ -24,5 +24,11 @@ namespace Pac_Fish
         {
             InitializeComponent();
         }
+
+        private void butSteve_Click(object sender, RoutedEventArgs e)
+        {
+            MainWindow.Perso = "steve";
+            ButLaunch.IsEnabled = true;
+        }
     }
 }

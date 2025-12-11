@@ -20,9 +20,98 @@ namespace Pac_Fish
     /// </summary>
     public partial class UCJeu : UserControl
     {
+        // 0 = empty path, 1 = wall, 2 = pellet
+        public static int[,] maze =
+        {
+    {1,1,1,1,1,1,1,1,1,1},
+    {1,2,2,2,1,2,2,2,2,1},
+    {1,2,1,2,1,2,1,1,2,1},
+    {1,2,1,2,2,2,1,2,2,1},
+    {1,2,1,1,1,1,1,2,1,1},
+    {1,2,2,2,2,2,2,2,2,1},
+    {1,1,1,1,1,1,1,1,1,1}
+};
+
         public UCJeu()
         {
             InitializeComponent();
+            string nomFichierImage = $"pack://application:,,,/PlaceHolders/{MainWindow.Perso}.gif";
+            imgPoisson.Source = new BitmapImage(new Uri(nomFichierImage));
+            DrawMaze();
+
         }
+        void DrawMaze()
+        {
+            int tileSize = 30;
+            for (int y = 0; y < maze.GetLength(0); y++)
+            {
+                for (int x = 0; x < maze.GetLength(1); x++)
+                {
+                    if (maze[y, x] == 1)
+                    {
+                        var wall = new Rectangle
+                        {
+                            Width = tileSize,
+                            Height = tileSize,
+                            Fill = Brushes.Blue
+                        };
+                        Canvas.SetLeft(wall, x * tileSize);
+                        Canvas.SetTop(wall, y * tileSize);
+                        MazeCanvas.Children.Add(wall);
+                    }
+                    else if (maze[y, x] == 2)
+                    {
+                        var pellet = new Ellipse
+                        {
+                            Width = 8,
+                            Height = 8,
+                            Fill = Brushes.Gold
+                        };
+                        Canvas.SetLeft(pellet, x * tileSize + 11);
+                        Canvas.SetTop(pellet, y * tileSize + 11);
+                        MazeCanvas.Children.Add(pellet);
+                    }
+                }
+            }
+        }
+
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            Application.Current.MainWindow.KeyDown += canvasJeu_KeyDown;
+            Application.Current.MainWindow.KeyUp += canvasJeu_KeyUp;
+        }
+
+        private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
+        {
+        
+        }
+
+        private void canvasJeu_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch(e.Key)
+            {
+                case Key.Up:
+                    if (Canvas.GetTop(imgPoisson) - MainWindow.PasPoisson <= 0)
+                    {
+                        break;
+                    }
+                    Canvas.SetTop(imgPoisson, Canvas.GetTop(imgPoisson) - MainWindow.PasPoisson);
+                    break;
+                case Key.Down:
+                    Canvas.SetTop(imgPoisson, Canvas.GetTop(imgPoisson) + MainWindow.PasPoisson);
+                    break;
+                case Key.Left:
+                    Canvas.SetLeft(imgPoisson, Canvas.GetLeft(imgPoisson) - MainWindow.PasPoisson);
+                    break;
+                case Key.Right:
+                    Canvas.SetLeft(imgPoisson, Canvas.GetLeft(imgPoisson) + MainWindow.PasPoisson);
+                    break;
+            }
+        }
+
+       
+
+        
     }
 }
