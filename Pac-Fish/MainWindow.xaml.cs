@@ -18,7 +18,9 @@ namespace Pac_Fish
 
     public partial class MainWindow : Window
     {
-        public static bool steve { get; set; } = false; //var pour savoir si le cheat code est ok
+        public static string Perso { get; set; }
+        public static int PasPoisson { get; set; } = 2;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -104,6 +106,16 @@ namespace Pac_Fish
             return (sender, e) => { Application.Current.Shutdown(); }; //trouver la signification de la ligne de pourquoi ça se ferme avec ça
         }
 
+        
 
+        private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ZoneJeu_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
     }
 }

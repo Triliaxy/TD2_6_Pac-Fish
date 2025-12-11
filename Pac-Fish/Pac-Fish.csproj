@@ -10,20 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="sprites\MaxwellTheCat.gif" />
-    <None Remove="sprites\popcat_gif.gif" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="sprites\MaxwellTheCat.gif">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="sprites\popcat_gif.gif">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Resource Include="PlaceHolders\steve.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
 

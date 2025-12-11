@@ -6,7 +6,45 @@
              xmlns:local="clr-namespace:Pac_Fish"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
-    </Grid>
+    <Canvas>
+        <Image x:Name="imgPoisson" Source="/PlaceHolders/steve.gif" Stretch="Fill" Canvas.Left="338" Canvas.Top="329" Height="111" Width="124"/>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="238,200,0,0" Stroke="White" VerticalAlignment="Top" Width="1"/>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="618,200,0,0" Stroke="White" VerticalAlignment="Top" Width="1"/>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="300,139,0,0" Stroke="White" VerticalAlignment="Top" Width="2" RenderTransformOrigin="0.5,0.5">
+            <Rectangle.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="490,72,0,0" Stroke="White" VerticalAlignment="Top" Width="1"/>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="618,72,0,0" Stroke="White" VerticalAlignment="Top" Width="2"/>
+        <Rectangle HorizontalAlignment="Left" Height="124" Margin="557,7,0,0" Stroke="White" VerticalAlignment="Top" Width="1" RenderTransformOrigin="0.5,0.5">
+            <Rectangle.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="238,200,0,0" Stroke="White" VerticalAlignment="Top" Width="1"/>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="238,200,0,0" Stroke="White" VerticalAlignment="Top" Width="1"/>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="238,200,0,0" Stroke="White" VerticalAlignment="Top" Width="1"/>
+        <Rectangle HorizontalAlignment="Left" Height="123" Margin="427,139,0,0" Stroke="White" VerticalAlignment="Top" Width="1" RenderTransformOrigin="0.5,0.5">
+            <Rectangle.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+
+    </Canvas>
 </UserControl>
