@@ -20,9 +20,32 @@ namespace Pac_Fish
     /// </summary>
     public partial class UCJeu : UserControl
     {
+        
+        
         public UCJeu()
         {
             InitializeComponent();
+            string nomFichierImage = $"pack://application:,,,/PlaceHolders/{MainWindow.Perso}.gif";
+            imgPoisson.Source = new BitmapImage(new Uri(nomFichierImage));
         }
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            Application.Current.MainWindow.KeyDown += canvasJeu_KeyDown;
+            Application.Current.MainWindow.KeyUp += canvasJeu_KeyUp;
+        }
+
+        private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void canvasJeu_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Right)
+            {
+                Canvas.SetLeft(imgPoisson, Canvas.GetLeft(imgPoisson) + MainWindow.PasPoisson);
+            }
+        }
+
     }
 }
