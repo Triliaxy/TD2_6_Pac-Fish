@@ -31,15 +31,19 @@ namespace Pac_Fish
     {1,2,2,2,2,2,2,2,2,1},
     {1,1,1,1,1,1,1,1,1,1}
 };
+        //todo : logique de jeu + génération logique
 
         public UCJeu()
         {
             InitializeComponent();
-            string nomFichierImage = $"pack://application:,,,/PlaceHolders/{MainWindow.Perso}.gif";
+            string nomFichierImage = $"pack://application:,,,/sprites/{MainWindow.Perso}.gif";
             imgPoisson.Source = new BitmapImage(new Uri(nomFichierImage));
             DrawMaze();
 
         }
+
+        //commenter la section ci-dessous
+
         void DrawMaze()
         {
             int tileSize = 30;

@@ -28,15 +28,15 @@ namespace Pac_Fish
 
 
 
-        private void Textbox_codeTriche_GotFocus(object sender, RoutedEventArgs e)
+        private void Textbox_codeTriche_GotFocus(object sender, RoutedEventArgs e) //fonction qui efface le contenu par défaut du textbox en cas de clique
         {
-            if (Textbox_codeTriche.Text == "Entrez votre code")
+            if (Textbox_codeTriche.Text == "Entrez votre code") 
             {
                 Textbox_codeTriche.Text = "";
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e) //faire les cheats codes ici
         {
             
             
@@ -44,7 +44,6 @@ namespace Pac_Fish
             if (codeEntre == "steve")
             {
                 MainWindow.steve = true;
-                
             }
         }
     

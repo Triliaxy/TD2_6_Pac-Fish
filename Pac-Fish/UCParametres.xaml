@@ -7,7 +7,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <Canvas Margin="122,83,122,114">
+        <Canvas x:Name="parametres" Margin="122,83,122,114">
             <TextBox x:Name="Textbox_codeTriche" GotFocus="Textbox_codeTriche_GotFocus" TextWrapping="Wrap" Text="Entrez votre code" Width="179" Height="41" HorizontalAlignment="Left" Canvas.Left="170" Canvas.Top="39" VerticalAlignment="Center" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#FFA5A7AD" Foreground="#FF968484"/>
             <!-- apparence par défaut -->
             <Label Content="Code de triche" Canvas.Left="61" Canvas.Top="40" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="100" HorizontalContentAlignment="Center" FontSize="14" Foreground="#FF00B3FF" VerticalContentAlignment="Center">
@@ -15,6 +15,7 @@
                     <SolidColorBrush Color="Black" Opacity="0"/>
                 </Label.Background>
             </Label>
+            <!--code pour le bouton utiliser-->
             <Button x:Name="Btn_utiliser" Content="Utiliser" Click="Button_Click" HorizontalAlignment="Left" Canvas.Left="376" Canvas.Top="46" VerticalAlignment="Top" Height="30" Width="60">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
