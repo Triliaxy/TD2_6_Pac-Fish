@@ -5,18 +5,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Pac_Fish"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="964" d:DesignWidth="854">
     <Grid>
         <Canvas x:Name="parametres" Margin="122,83,122,114">
-            <TextBox x:Name="Textbox_codeTriche" GotFocus="Textbox_codeTriche_GotFocus" TextWrapping="Wrap" Text="Entrez votre code" Width="179" Height="41" HorizontalAlignment="Left" Canvas.Left="170" Canvas.Top="39" VerticalAlignment="Center" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#FFA5A7AD" Foreground="#FF968484"/>
+            <TextBox x:Name="Textbox_codeTriche" GotFocus="Textbox_codeTriche_GotFocus" TextWrapping="Wrap" Text="Entrez votre code" Width="179" Height="41" HorizontalAlignment="Left" Canvas.Left="227" Canvas.Top="44" VerticalAlignment="Top" TextAlignment="Center" VerticalContentAlignment="Center" BorderBrush="#FFA5A7AD" Foreground="#FF968484"/>
             <!-- apparence par défaut -->
-            <Label Content="Code de triche" Canvas.Left="61" Canvas.Top="40" HorizontalAlignment="Left" VerticalAlignment="Center" Height="40" Width="100" HorizontalContentAlignment="Center" FontSize="14" Foreground="#FF00B3FF" VerticalContentAlignment="Center">
+            <Label Content="Code de triche" Canvas.Left="118" Canvas.Top="45" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="100" HorizontalContentAlignment="Center" FontSize="14" Foreground="#FF00B3FF" VerticalContentAlignment="Center">
                 <Label.Background>
                     <SolidColorBrush Color="Black" Opacity="0"/>
                 </Label.Background>
             </Label>
             <!--code pour le bouton utiliser-->
-            <Button x:Name="Btn_utiliser" Content="Utiliser" Click="Button_Click" HorizontalAlignment="Left" Canvas.Left="376" Canvas.Top="46" VerticalAlignment="Top" Height="30" Width="60">
+            <Button x:Name="Btn_utiliser" Content="Utiliser" Click="Button_Click" HorizontalAlignment="Left" Canvas.Left="433" Canvas.Top="51" VerticalAlignment="Top" Height="30" Width="60">
                 <Button.Style>
                     <Style TargetType="{x:Type Button}">
                         <!-- apparence par défaut -->
@@ -54,8 +54,8 @@
 
         </Canvas>
 
-        <Button x:Name="butRetourPara" Content="Retour" HorizontalAlignment="Left" Margin="200,384,0,0" VerticalAlignment="Top" Height="42" Width="110" FontSize="24"/>
-        <Button x:Name="butValiderPara" Content="Valider" HorizontalAlignment="Left" Margin="503,384,0,0" VerticalAlignment="Top" Height="42" Width="110" Click="Button_Click" RenderTransformOrigin="0.546,0.19" FontSize="24"/>
+        <Button x:Name="butRetourPara" Content="Retour" HorizontalAlignment="Left" Margin="232,384,0,0" VerticalAlignment="Top" Height="42" Width="110" FontSize="24"/>
+        <Button x:Name="butValiderPara" Content="Valider" HorizontalAlignment="Left" Margin="535,384,0,0" VerticalAlignment="Top" Height="42" Width="110" Click="Button_Click" RenderTransformOrigin="0.546,0.19" FontSize="24"/>
 
     </Grid>
 </UserControl>
