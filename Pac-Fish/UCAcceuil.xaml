@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Pac_Fish"
              mc:Ignorable="d" 
-             d:DesignHeight="434" d:DesignWidth="800">
+             d:DesignHeight="964" d:DesignWidth="854">
     <Grid>
         <Button x:Name="butBoutique" Content="Boutique" Margin="0,225,0,0" Height="36" Width="120" HorizontalAlignment="Center" VerticalAlignment="Top"/>
         <Button x:Name="butJouer" Content="Jouer" HorizontalAlignment="Center" Margin="0,148,0,0" VerticalAlignment="Top" Height="36" Width="120"/>

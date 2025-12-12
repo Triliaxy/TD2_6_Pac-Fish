@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Pac_Fish"
              xmlns:gif="http://wpfanimatedgif.codeplex.com"
              mc:Ignorable="d"
-             Height="450" Width="800">
+             Height="964" Width="854">
     <!-- xmlns:gif="http://wpfanimatedgif.codeplex.com" permet d’assigner gif au lien ( cf image ) -->
     <Grid>
         <!-- prise en charge du gif -->
