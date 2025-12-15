@@ -16,17 +16,17 @@ namespace Pac_Fish
     /// </summary>
     public partial class UCJeu : UserControl
     {
-        // Map des pellets pour accès O(1) lors de la consommation
-        private readonly Dictionary<(int X, int Y), Ellipse> pelletMap = new();
-
-        // Positions initiales des pellets (capturées au premier DrawMaze)
-        private readonly List<(int X, int Y)> initialPelletPositions = new();
-
-        // facteur de réduction de l'intervalle (ex: 0.9 = +10% de vitesse)
-        private const double IntervalReductionFactor = 0.9;
+        // Configuration / constantes
+        private const int DefaultTileSize = 30;
+        private const double IntervalReductionFactor = 0.9; // 0.9 = +10% de vitesse
         private const double MinIntervalMs = 30;
 
-        // 0 = chemin vide, 1 = mur, 2 = points
+        // Etat du labyrinthe et des pellets
+        // clé = (X=colonne, Y=ligne)
+        private readonly Dictionary<(int X, int Y), Ellipse> pelletMap = new();
+        private readonly List<(int X, int Y)> initialPelletPositions = new();
+
+        // Représentation du labyrinthe (0=vide,1=mur,2=pellet)
         public static int[,] maze =
         {
             {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -62,53 +62,90 @@ namespace Pac_Fish
             {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
         };
 
-        private int tileSize = 30;
+        // Taille d'une case (modifiable si besoin)
+        private int tileSize = DefaultTileSize;
 
-        private enum Direction { None, Up, Down, Left, Right } //ajout de l'option None pour ne pas bouger
-        private Direction currentDirection = Direction.None; //direction actuelle du poisson
-        private DispatcherTimer moveTimer; //timer pour gérer le déplacement
+        // Déplacements et timer
+        private enum Direction { None, Up, Down, Left, Right }
+        private Direction currentDirection = Direction.None;
+        private DispatcherTimer moveTimer;
 
-        // Nouveau : compteur de score et TextBlock pour l'afficher
+        // Score
         private int score = 0;
         private TextBlock scoreText;
+
+        // Indicateur pour ne dessiner les murs/pellets qu'une seule fois
+        private bool mazeDrawn = false;
+
+        // Brushes et effets réutilisables (évite réallocation tous les ticks)
+        private readonly LinearGradientBrush coralFillBrush;
+        private readonly Brush coralStrokeBrush = new SolidColorBrush(Color.FromRgb(220, 100, 80));
+        private readonly DropShadowEffect coralEffect;
+        private readonly RadialGradientBrush bubbleFillBrush;
+        private readonly DropShadowEffect bubbleEffect;
 
         public UCJeu()
         {
             InitializeComponent();
 
-            DrawMaze();
+            // Prépare les brushes/effets une seule fois
+            coralFillBrush = CreateCoralBrush();
+            coralFillBrush.Freeze();
 
-            // redimensionne et aligne le poisson sur la grille
+            coralEffect = new DropShadowEffect
+            {
+                Color = Color.FromRgb(255, 200, 180),
+                BlurRadius = 6,
+                ShadowDepth = 0,
+                Opacity = 0.25
+            };
+
+            bubbleFillBrush = CreateBubbleBrush();
+            bubbleFillBrush.Freeze();
+
+            bubbleEffect = new DropShadowEffect
+            {
+                Color = Colors.LightSkyBlue,
+                BlurRadius = 6,
+                ShadowDepth = 0,
+                Opacity = 0.5
+            };
+
+            // Gestion initiale
+            DrawMaze(); // ne dessinera qu'une fois grâce à mazeDrawn
             InitializePlayerSizeAndPosition();
+            CreateScoreText();
 
-            // configure le TextBlock de score
+            // configure le timer de déplacement selon la variable globale
+            moveTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(MainWindow.MoveIntervalMs)
+            };
+            moveTimer.Tick += MoveTimer_Tick;
+            moveTimer.Start();
+        }
+
+        // Prépare et ajoute le TextBlock de score
+        private void CreateScoreText()
+        {
+            if (scoreText != null) return;
+
             scoreText = new TextBlock
             {
                 Foreground = Brushes.White,
                 FontSize = 16,
                 Text = "Score: 0"
             };
-            // positionne le score en haut à gauche (ajustez si nécessaire)
             Canvas.SetLeft(scoreText, 6);
             Canvas.SetTop(scoreText, 6);
             MazeCanvas.Children.Add(scoreText);
-
-            // configure le timer de déplacement selon la variable globale
-            moveTimer = new DispatcherTimer();
-            moveTimer.Interval = TimeSpan.FromMilliseconds(MainWindow.MoveIntervalMs);
-            moveTimer.Tick += MoveTimer_Tick;
-            moveTimer.Start();
         }
 
-        //commenter la section ci-dessous
-
+        // Dessine murs et pellets (exécuté une seule fois)
         void DrawMaze()
         {
-            // sécurité : si le canvas n'est pas encore initialisé on quitte
-            if (MazeCanvas == null) return;
+            if (MazeCanvas == null || mazeDrawn) return;
 
-            // Conserver les éléments déjà présents (imgPoisson, scoreText) : on n'efface rien globalement.
-            // Dessine murs et pellets ; n'ajoute les positions initiales qu'une seule fois.
             for (int y = 0; y < maze.GetLength(0); y++)
             {
                 for (int x = 0; x < maze.GetLength(1); x++)
@@ -122,67 +159,38 @@ namespace Pac_Fish
                     {
                         var pellet = CreateBubble(x, y);
                         MazeCanvas.Children.Add(pellet);
-
-                        // Enregistre l'ellipse dans la map pour accès rapide
                         pelletMap[(x, y)] = pellet;
-
-                        // Enregistre la position initiale si pas déjà connue
-                        if (!initialPelletPositions.Contains((x, y)))
-                        {
-                            initialPelletPositions.Add((x, y));
-                        }
+                        initialPelletPositions.Add((x, y));
                     }
                 }
             }
+
+            mazeDrawn = true;
         }
 
+        // Crée un rectangle "corail" (utilise les brushes/effets partagés)
         private Rectangle CreateCoral(int x, int y)
         {
-            // crée un "corail" visuel : rectangle arrondi avec dégradé et ombre
             var coral = new Rectangle
             {
                 Width = tileSize,
                 Height = tileSize,
                 RadiusX = Math.Max(4, tileSize * 0.12),
                 RadiusY = Math.Max(4, tileSize * 0.12),
-                Stroke = new SolidColorBrush(Color.FromRgb(220, 100, 80)),
-                StrokeThickness = 1.0
+                Stroke = coralStrokeBrush,
+                StrokeThickness = 1.0,
+                Fill = coralFillBrush,
+                Effect = coralEffect
             };
 
-            // dégradé "corail"
-            var brush = new LinearGradientBrush
-            {
-                StartPoint = new Point(0, 0),
-                EndPoint = new Point(1, 1)
-            };
-            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 127, 80), 0.0));  // coral
-            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 160, 122), 0.45)); // light coral
-            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 99, 71), 0.8));    // tomato-ish
-            brush.GradientStops.Add(new GradientStop(Color.FromRgb(200, 70, 60), 1.0));    // darker edge
-            coral.Fill = brush;
-
-            // léger relief / texture simulée par un effet d'ombre intérieure simulée avec DropShadow léger
-            coral.Effect = new DropShadowEffect
-            {
-                Color = Color.FromRgb(255, 200, 180),
-                BlurRadius = 6,
-                ShadowDepth = 0,
-                Opacity = 0.25
-            };
-
-            // positionne la brique corail
             Canvas.SetLeft(coral, x * tileSize);
             Canvas.SetTop(coral, y * tileSize);
-
-            // optionnel : ajouter petits "poches" claires pour casser la surface (sub-ellipses)
-            // pour rester simple et performant on n'ajoute pas d'enfants visuels ici.
-
             return coral;
         }
 
+        // Crée la bulle visuelle (pellet) — réutilise la même Brush/Effect
         private Ellipse CreateBubble(int x, int y)
         {
-            // taille proportionnelle à la case
             double size = Math.Max(8, tileSize * 0.4);
 
             var bubble = new Ellipse
@@ -191,32 +199,11 @@ namespace Pac_Fish
                 Height = size,
                 Stroke = Brushes.White,
                 StrokeThickness = 1,
-                Opacity = 0.95
+                Opacity = 0.95,
+                Fill = bubbleFillBrush,
+                Effect = bubbleEffect
             };
 
-            // Remplissage radial pour effet "bulle"
-            var brush = new RadialGradientBrush
-            {
-                GradientOrigin = new Point(0.35, 0.35),
-                Center = new Point(0.35, 0.35),
-                RadiusX = 0.8,
-                RadiusY = 0.8
-            };
-            brush.GradientStops.Add(new GradientStop(Color.FromArgb(220, 255, 255, 255), 0.0));      // centre lumineux
-            brush.GradientStops.Add(new GradientStop(Color.FromArgb(160, 180, 220, 255), 0.6));      // léger bleu
-            brush.GradientStops.Add(new GradientStop(Color.FromArgb(110, 120, 180, 255), 1.0));      // bord bleuté
-            bubble.Fill = brush;
-
-            // Ombre légère pour donner du volume
-            bubble.Effect = new DropShadowEffect
-            {
-                Color = Colors.LightSkyBlue,
-                BlurRadius = 6,
-                ShadowDepth = 0,
-                Opacity = 0.5
-            };
-
-            // Centre la bulle dans la case
             double left = x * tileSize + (tileSize - size) / 2.0;
             double top = y * tileSize + (tileSize - size) / 2.0;
             Canvas.SetLeft(bubble, left);
@@ -225,25 +212,22 @@ namespace Pac_Fish
             return bubble;
         }
 
+        // Initialise la taille et la position du joueur sans ré-allocation inutile
         private void InitializePlayerSizeAndPosition()
         {
-            // définit la taille du poisson à une case
             imgPoisson.Width = tileSize;
             imgPoisson.Height = tileSize;
 
-            // Détermine une cellule de départ "en bas" (juste au-dessus de la dernière ligne de murs),
-            // préférentiellement au centre ; si centre = mur, on recherche la cellule non-mur la plus proche.
             int rows = maze.GetLength(0);
             int cols = maze.GetLength(1);
 
-            int startRow = Math.Max(0, rows - 2); // ligne juste au-dessus du dernier mur
+            int startRow = Math.Max(0, rows - 2);
             int centerCol = cols / 2;
 
             int cellX = centerCol;
             int cellY = startRow;
             bool found = false;
 
-            // Cherche sur startRow puis remonte si nécessaire
             for (int y = startRow; y >= 0 && !found; y--)
             {
                 for (int offset = 0; offset <= cols / 2 && !found; offset++)
@@ -269,18 +253,16 @@ namespace Pac_Fish
                 }
             }
 
-            // Positionne le poisson exactement sur la cellule trouvée
             Canvas.SetLeft(imgPoisson, cellX * tileSize);
             Canvas.SetTop(imgPoisson, cellY * tileSize);
 
-            // aligne le pas de déplacement sur tileSize si souhaité
             try
             {
                 MainWindow.PasPoisson = tileSize;
             }
             catch
             {
-                // si la propriété n'existe pas ou est inaccessible, on ignore silencieusement
+                // silencieux si propriété non accessible
             }
         }
 
@@ -294,23 +276,19 @@ namespace Pac_Fish
         */
         private void MoveTimer_Tick(object? sender, EventArgs e)
         {
-            // déplace une seule fois par tick si une direction est active
             if (currentDirection == Direction.None) return;
 
-            // Récupère la position actuelle (en pixels). Si NaN, on considère 0.
             double left = Canvas.GetLeft(imgPoisson);
             double top = Canvas.GetTop(imgPoisson);
             if (double.IsNaN(left)) left = 0;
             if (double.IsNaN(top)) top = 0;
 
-            // Convertit la position en coordonnées de cellule (colonnes / lignes)
             int currCellX = (int)Math.Round(left / tileSize);
             int currCellY = (int)Math.Round(top / tileSize);
 
             int rows = maze.GetLength(0);
             int cols = maze.GetLength(1);
 
-            // Calcule la cellule cible selon la direction demandée
             int targetCellX = currCellX;
             int targetCellY = currCellY;
             switch (currentDirection)
@@ -329,13 +307,10 @@ namespace Pac_Fish
                     break;
             }
 
-            // Gère le passage de tunnel horizontal : si on sort à gauche ou à droite,
-            // autorise le wrap vers l'autre bord si la cellule côté opposé (même Y) n'est pas un mur.
+            // Wrap horizontal si possible
             if ((targetCellX < 0 || targetCellX >= cols) && (currentDirection == Direction.Left || currentDirection == Direction.Right))
             {
                 int wrapX = (targetCellX + cols) % cols;
-
-                // n'autorise le wrap que si la cellule courante n'est pas un mur et la cellule wrap n'est pas un mur
                 if (maze[currCellY, currCellX] != 1 && maze[currCellY, wrapX] != 1)
                 {
                     targetCellX = wrapX;
@@ -343,30 +318,21 @@ namespace Pac_Fish
                 }
                 else
                 {
-                    // sinon on ne bouge pas
                     return;
                 }
             }
 
-            // Vérifie bornes (après tentative de wrap). Si hors limites verticales ou autres cas, on ne bouge pas.
             if (targetCellY < 0 || targetCellY >= rows ||
                 targetCellX < 0 || targetCellX >= cols)
             {
-                // hors du labyrinthe : on ne bouge pas
                 return;
             }
 
-            // Collision : si la cellule cible est un mur (1), Steve ne bouge pas
-            if (maze[targetCellY, targetCellX] == 1)
-            {
-                return;
-            }
+            if (maze[targetCellY, targetCellX] == 1) return;
 
-            // Autorisé : positionne Steve exactement sur la cellule cible
             Canvas.SetLeft(imgPoisson, targetCellX * tileSize);
             Canvas.SetTop(imgPoisson, targetCellY * tileSize);
 
-            // Après déplacement : vérifie et mange un pellet éventuel
             EatPelletAt(targetCellX, targetCellY);
         }
 
@@ -374,41 +340,34 @@ namespace Pac_Fish
         {
             if (maze[cellY, cellX] != 2) return;
 
-            // Met à jour la donnée logique : plus de pellet dans la cellule
             maze[cellY, cellX] = 0;
-
-            // Incrémente le score (valeur choisie : 10 par pellet)
             score += 10;
 
-            // Retire l'ellipse du Canvas si elle existe dans la map
             if (pelletMap.TryGetValue((cellX, cellY), out var pellet))
             {
                 MazeCanvas.Children.Remove(pellet);
                 pelletMap.Remove((cellX, cellY));
             }
 
-            // Mise à jour de l'affichage du score si le TextBlock existe
             if (scoreText != null)
             {
                 scoreText.Text = $"Score: {score}";
             }
 
-            // Si plus aucun pellet, on réinitialise la map de pellets et on augmente la vitesse
             if (pelletMap.Count == 0)
             {
                 ResetPelletsAndIncreaseSpeed();
             }
         }
 
+        // Réinitialise les pellets à leurs positions initiales sans toucher à la position du joueur
         private void ResetPelletsAndIncreaseSpeed()
         {
-            // Remet la donnée logique et re-crée visuellement les pellets
             foreach (var (x, y) in initialPelletPositions)
             {
                 if (maze[y, x] != 1)
                 {
                     maze[y, x] = 2;
-
                     if (!pelletMap.ContainsKey((x, y)))
                     {
                         var pellet = CreateBubble(x, y);
@@ -418,21 +377,19 @@ namespace Pac_Fish
                 }
             }
 
-            // Augmente la vitesse : réduit l'intervalle du timer (cap min)
             if (moveTimer != null)
             {
                 double currentMs = moveTimer.Interval.TotalMilliseconds;
                 double newMs = Math.Max(MinIntervalMs, currentMs * IntervalReductionFactor);
                 moveTimer.Interval = TimeSpan.FromMilliseconds(newMs);
 
-                // Optionnel : mettre à jour MainWindow.MoveIntervalMs si persisté globalement
                 try
                 {
                     MainWindow.MoveIntervalMs = (int)newMs;
                 }
                 catch
                 {
-                    // ignore si la propriété n'existe pas ou n'est pas accessible
+                    // ignore
                 }
             }
         }
@@ -445,7 +402,6 @@ namespace Pac_Fish
 
         private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
         {
-            // si la touche relâchée correspond à la direction active, on stoppe
             switch (e.Key)
             {
                 case Key.Up when currentDirection == Direction.Up:
@@ -459,7 +415,6 @@ namespace Pac_Fish
 
         private void canvasJeu_KeyDown(object sender, KeyEventArgs e)
         {
-            // on mémorise la direction uniquement, le déplacement effectif se fait dans le timer
             switch (e.Key)
             {
                 case Key.Up:
@@ -475,6 +430,36 @@ namespace Pac_Fish
                     currentDirection = Direction.Right;
                     break;
             }
+        }
+
+        // Factories pour Brushes/Effets (séparées pour lisibilité)
+        private static LinearGradientBrush CreateCoralBrush()
+        {
+            var brush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 127, 80), 0.0));
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 160, 122), 0.45));
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 99, 71), 0.8));
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(200, 70, 60), 1.0));
+            return brush;
+        }
+
+        private static RadialGradientBrush CreateBubbleBrush()
+        {
+            var brush = new RadialGradientBrush
+            {
+                GradientOrigin = new Point(0.35, 0.35),
+                Center = new Point(0.35, 0.35),
+                RadiusX = 0.8,
+                RadiusY = 0.8
+            };
+            brush.GradientStops.Add(new GradientStop(Color.FromArgb(220, 255, 255, 255), 0.0));
+            brush.GradientStops.Add(new GradientStop(Color.FromArgb(160, 180, 220, 255), 0.6));
+            brush.GradientStops.Add(new GradientStop(Color.FromArgb(110, 120, 180, 255), 1.0));
+            return brush;
         }
     }
 }
