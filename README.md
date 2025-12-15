@@ -4,10 +4,10 @@ Note : Triliaxy est Rémy GONZALEZ PAULO
 TheoM74 est Théo MAUHIN
 
 TODO :
-  - Recherche d’images
   - Trouver fond écran
   - Redimenssionner button taille et taille texte pour harmoniser
   - Mettre en place choix skin, choix dans boutique, et écran de fin de partie
+  - Harmoniser le design
 
 
 **Seance 1 : brainstorm**
