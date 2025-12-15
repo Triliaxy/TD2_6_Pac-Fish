@@ -41,7 +41,7 @@ namespace Pac_Fish
             {1,1,1,1,1,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,0,0,0,0,0,0,0,0,0,0,1,1,2,1,1,1,1,1,1},
-            {1,1,1,1,1,1,2,1,1,0,1,1,1,1,1,1,1,1,0,1,1,2,1,1,1,1,1,1},
+            {1,1,1,1,1,1,2,1,1,0,1,1,1,0,0,1,1,1,0,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,0,1,0,0,0,0,0,0,1,0,1,1,2,1,1,1,1,1,1},
             {0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0},
             {1,1,1,1,1,1,2,1,1,0,1,0,0,0,0,0,0,1,0,1,1,2,1,1,1,1,1,1},
@@ -86,7 +86,7 @@ namespace Pac_Fish
 
         public UCJeu()
         {
-            InitializeComponent();
+            InitializeComponent(); // Initialise les composants et charge le XAML associé
 
             // Prépare les brushes/effets une seule fois
             coralFillBrush = CreateCoralBrush();
@@ -148,7 +148,7 @@ namespace Pac_Fish
 
             for (int y = 0; y < maze.GetLength(0); y++)
             {
-                for (int x = 0; x < maze.GetLength(1); x++)
+                for (int x = 0; x < cols; x++)
                 {
                     if (maze[y, x] == 1)
                     {
@@ -396,6 +396,7 @@ namespace Pac_Fish
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            //bout de code pour gérer les events clavier
             Application.Current.MainWindow.KeyDown += canvasJeu_KeyDown;
             Application.Current.MainWindow.KeyUp += canvasJeu_KeyUp;
         }

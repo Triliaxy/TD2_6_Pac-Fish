@@ -28,6 +28,11 @@ namespace Pac_Fish
         public MainWindow()
         {
             InitializeComponent();
+            WindowState = WindowState.Maximized;
+            WindowStyle = WindowStyle.None;
+            ResizeMode = ResizeMode.NoResize;
+            Topmost = false;
+
             AfficheDemarrage();
         }
 
