@@ -25,6 +25,12 @@ namespace Pac_Fish
         public MainWindow()
         {
             InitializeComponent();
+            // Fullscreen enforced
+            WindowState = WindowState.Maximized;
+            WindowStyle = WindowStyle.None;
+            ResizeMode = ResizeMode.NoResize;
+            Topmost = true;
+
             AfficheDemarrage();
         }
 

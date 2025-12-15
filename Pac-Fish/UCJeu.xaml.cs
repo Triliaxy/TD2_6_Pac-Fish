@@ -72,7 +72,9 @@ namespace Pac_Fish
 
         void DrawMaze()
         {
-            int tileSize = 30;
+            int tileSize = 47;
+            int pelletSize = 8;
+            int pelletOffset = (tileSize - pelletSize) / 2; //pour centrer les pieces
             for (int y = 0; y < maze.GetLength(0); y++)
             {
                 for (int x = 0; x < maze.GetLength(1); x++)
@@ -93,12 +95,12 @@ namespace Pac_Fish
                     {
                         var pellet = new Ellipse
                         {
-                            Width = 8,
-                            Height = 8,
+                            Width = pelletSize,
+                            Height = pelletSize,
                             Fill = Brushes.Gold
                         };
-                        Canvas.SetLeft(pellet, x * tileSize + 11);
-                        Canvas.SetTop(pellet, y * tileSize + 11);
+                        Canvas.SetLeft(pellet, x * tileSize + pelletOffset);
+                        Canvas.SetTop(pellet, y * tileSize + pelletOffset);
                         MazeCanvas.Children.Add(pellet);
                     }
                 }
