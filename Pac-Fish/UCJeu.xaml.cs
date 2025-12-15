@@ -65,6 +65,10 @@ namespace Pac_Fish
         private Direction currentDirection = Direction.None; //direction actuelle du poisson
         private DispatcherTimer moveTimer; //timer pour gérer le déplacement
 
+        // Nouveau : compteur de score et TextBlock pour l'afficher
+        private int score = 0;
+        private TextBlock scoreText;
+
         public UCJeu()
         {
             InitializeComponent();
@@ -76,6 +80,18 @@ namespace Pac_Fish
 
             // redimensionne et aligne le poisson sur la grille
             InitializePlayerSizeAndPosition();
+
+            // configure le TextBlock de score
+            scoreText = new TextBlock
+            {
+                Foreground = Brushes.White,
+                FontSize = 16,
+                Text = "Score: 0"
+            };
+            // positionne le score en haut à gauche (ajustez si nécessaire)
+            Canvas.SetLeft(scoreText, 6);
+            Canvas.SetTop(scoreText, 6);
+            MazeCanvas.Children.Add(scoreText);
 
             // configure le timer de déplacement selon la variable globale
             moveTimer = new DispatcherTimer();
@@ -127,15 +143,45 @@ namespace Pac_Fish
             imgPoisson.Width = tileSize;
             imgPoisson.Height = tileSize;
 
-            // récupère la position actuelle (peut être NaN si non définie)
-            double left = Canvas.GetLeft(imgPoisson);
-            double top = Canvas.GetTop(imgPoisson);
-            if (double.IsNaN(left)) left = 0;
-            if (double.IsNaN(top)) top = 0;
+            // Détermine une cellule de départ "en bas" (juste au-dessus de la dernière ligne de murs),
+            // préférentiellement au centre ; si centre = mur, on recherche la cellule non-mur la plus proche.
+            int rows = maze.GetLength(0);
+            int cols = maze.GetLength(1);
 
-            // calcule la cellule la plus proche et aligne exactement
-            int cellX = (int)Math.Round(left / tileSize);
-            int cellY = (int)Math.Round(top / tileSize);
+            int startRow = Math.Max(0, rows - 2); // ligne juste au-dessus du dernier mur
+            int centerCol = cols / 2;
+
+            int cellX = centerCol;
+            int cellY = startRow;
+            bool found = false;
+
+            // Cherche sur startRow puis remonte si nécessaire
+            for (int y = startRow; y >= 0 && !found; y--)
+            {
+                for (int offset = 0; offset <= cols / 2 && !found; offset++)
+                {
+                    int left = centerCol - offset;
+                    int right = centerCol + offset;
+
+                    if (left >= 0 && maze[y, left] != 1)
+                    {
+                        cellX = left;
+                        cellY = y;
+                        found = true;
+                        break;
+                    }
+
+                    if (right < cols && maze[y, right] != 1)
+                    {
+                        cellX = right;
+                        cellY = y;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            // Positionne le poisson exactement sur la cellule trouvée
             Canvas.SetLeft(imgPoisson, cellX * tileSize);
             Canvas.SetTop(imgPoisson, cellY * tileSize);
 
@@ -150,16 +196,46 @@ namespace Pac_Fish
             }
         }
 
+        /*
+        Timer de déplacement : déplace l'image du poisson selon la direction courante,
+        vérifie si la nouvelle position correspond à une cellule contenant un pellet (2),
+        gère la consommation du pellet (mise à 0 dans le tableau), la suppression graphique
+        de l'ellipse correspondante et la mise à jour du score.
+        
+        PSEUDOCODE :
+        - Si la direction actuelle est None : ne rien faire et sortir.
+        - Récupérer la position actuelle en pixels de l'image (left, top).
+          - Si NaN, remplacer par 0 pour éviter exceptions.
+        - Appliquer un déplacement en pixels selon la direction et MainWindow.PasPoisson.
+        - Après déplacement, récupérer la nouvelle position (newLeft, newTop).
+        - Convertir la position en coordonnées de cellule :
+          - cellX = arrondi(newLeft / tileSize)
+          - cellY = arrondi(newTop / tileSize)
+        - Vérifier que cellX/cellY sont dans les limites du tableau `maze`.
+        - Si la cellule contient un pellet (valeur 2) :
+          - Mettre `maze[cellY, cellX] = 0` pour marquer la pellet mangée.
+          - Incrémenter `score` (ici +10).
+          - Rechercher dans `MazeCanvas.Children` une `Ellipse` positionnée aux coordonnées attendues
+            (on compare avec la position calculée utilisée lors du dessin : x * tileSize + 11, y * tileSize + 11).
+            - Si trouvée, la supprimer de `MazeCanvas.Children`.
+          - Mettre à jour le texte du `scoreText` si non null.
+        - Notes d'implémentation :
+          - Les comparaisons de position utilisent une tolérance faible (0.1) pour éviter les erreurs
+            dues aux conversions en double.
+          - On garde la logique de Round pour correspondre au placement par cellule.
+        */
         private void MoveTimer_Tick(object? sender, EventArgs e)
         {
             // déplace une seule fois par tick si une direction est active
             if (currentDirection == Direction.None) return;
 
+            // Récupère la position actuelle (en pixels). Si NaN, on considère 0.
             double left = Canvas.GetLeft(imgPoisson);
             double top = Canvas.GetTop(imgPoisson);
-            if (double.IsNaN(left)) left = 0; //remplace par 0 dans le cas où la position n'est pas encore définie
+            if (double.IsNaN(left)) left = 0;
             if (double.IsNaN(top)) top = 0;
 
+            // Applique le déplacement selon la direction courante (utilise MainWindow.PasPoisson)
             switch (currentDirection)
             {
                 case Direction.Up:
@@ -175,6 +251,53 @@ namespace Pac_Fish
                     Canvas.SetLeft(imgPoisson, left + MainWindow.PasPoisson);
                     break;
             }
+
+            // Récupère la nouvelle position après déplacement
+            double newLeft = Canvas.GetLeft(imgPoisson);
+            double newTop = Canvas.GetTop(imgPoisson);
+
+            // Convertit la position en coordonnées de cellule (colonnes / lignes)
+            int cellX = (int)Math.Round(newLeft / tileSize);
+            int cellY = (int)Math.Round(newTop / tileSize);
+
+            // Vérifie que les indices de cellule sont bien dans les bornes du tableau `maze`
+            if (cellY >= 0 && cellY < maze.GetLength(0) && cellX >= 0 && cellX < maze.GetLength(1))
+            {
+                // Si la cellule contient un pellet (2), on le mange
+                if (maze[cellY, cellX] == 2)
+                {
+                    // Met à jour la donnée logique : plus de pellet dans la cellule
+                    maze[cellY, cellX] = 0;
+
+                    // Incrémente le score (valeur choisie : 10 par pellet)
+                    score += 10;
+
+                    // Calcul des positions attendues de l'ellipse (mêmes offsets que lors du DrawMaze)
+                    double expectedLeft = cellX * tileSize + 11;
+                    double expectedTop = cellY * tileSize + 11;
+
+                    // Recherche de l'ellipse correspondante dans le canvas.
+                    // On utilise une tolérance pour éviter les faux négatifs dus aux conversions numériques.
+                    const double tolerance = 0.1;
+                    var pelletToRemove = MazeCanvas.Children
+                        .OfType<Ellipse>()
+                        .FirstOrDefault(el =>
+                            Math.Abs(Canvas.GetLeft(el) - expectedLeft) < tolerance &&
+                            Math.Abs(Canvas.GetTop(el) - expectedTop) < tolerance);
+
+                    // Si trouvée, suppression graphique du pellet
+                    if (pelletToRemove != null)
+                    {
+                        MazeCanvas.Children.Remove(pelletToRemove);
+                    }
+
+                    // Mise à jour de l'affichage du score si le TextBlock existe
+                    if (scoreText != null)
+                    {
+                        scoreText.Text = $"Score: {score}";
+                    }
+                }
+            }
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -186,7 +309,7 @@ namespace Pac_Fish
         private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
         {
             // si la touche relâchée correspond à la direction active, on stoppe
-           switch (e.Key)
+            switch (e.Key)
             {
                 case Key.Up when currentDirection == Direction.Up:
                 case Key.Down when currentDirection == Direction.Down:
