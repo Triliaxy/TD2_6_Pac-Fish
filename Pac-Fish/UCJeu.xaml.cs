@@ -212,6 +212,14 @@ namespace Pac_Fish
 
         Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCanvas.Children.
         */
+        /*
+Timer de déplacement : déplace l'image du poisson selon la direction courante,
+vérifie si la nouvelle position correspond à une cellule contenant un pellet (2),
+gère la consommation du pellet via EatPelletAt (mise à 0 dans le tableau), la suppression graphique
+de l'ellipse correspondante et la mise à jour du score.
+
+Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCanvas.Children.
+*/
         private void MoveTimer_Tick(object? sender, EventArgs e)
         {
             // déplace une seule fois par tick si une direction est active
@@ -223,40 +231,52 @@ namespace Pac_Fish
             if (double.IsNaN(left)) left = 0;
             if (double.IsNaN(top)) top = 0;
 
-            // Applique le déplacement selon la direction courante (utilise MainWindow.PasPoisson)
+            // Convertit la position en coordonnées de cellule (colonnes / lignes)
+            int currCellX = (int)Math.Round(left / tileSize);
+            int currCellY = (int)Math.Round(top / tileSize);
+
+            // Calcule la cellule cible selon la direction demandée
+            int targetCellX = currCellX;
+            int targetCellY = currCellY;
             switch (currentDirection)
             {
                 case Direction.Up:
-                    Canvas.SetTop(imgPoisson, top - MainWindow.PasPoisson);
+                    targetCellY = currCellY - 1;
                     break;
                 case Direction.Down:
-                    Canvas.SetTop(imgPoisson, top + MainWindow.PasPoisson);
+                    targetCellY = currCellY + 1;
                     break;
                 case Direction.Left:
-                    Canvas.SetLeft(imgPoisson, left - MainWindow.PasPoisson);
+                    targetCellX = currCellX - 1;
                     break;
                 case Direction.Right:
-                    Canvas.SetLeft(imgPoisson, left + MainWindow.PasPoisson);
+                    targetCellX = currCellX + 1;
                     break;
             }
 
-            // Récupère la nouvelle position après déplacement
-            double newLeft = Canvas.GetLeft(imgPoisson);
-            double newTop = Canvas.GetTop(imgPoisson);
-
-            // Convertit la position en coordonnées de cellule (colonnes / lignes)
-            int cellX = (int)Math.Round(newLeft / tileSize);
-            int cellY = (int)Math.Round(newTop / tileSize);
-
-            // Vérifie que les indices de cellule sont bien dans les bornes du tableau `maze`
-            if (cellY >= 0 && cellY < maze.GetLength(0) && cellX >= 0 && cellX < maze.GetLength(1))
+            // Vérifie bornes
+            if (targetCellY < 0 || targetCellY >= maze.GetLength(0) ||
+                targetCellX < 0 || targetCellX >= maze.GetLength(1))
             {
-                // Utilise la méthode optimisée pour consommer le pellet si présent
-                EatPelletAt(cellX, cellY);
+                // hors du labyrinthe : on ne bouge pas
+                return;
             }
+
+            // Collision : si la cellule cible est un mur (1), Steve ne bouge pas
+            if (maze[targetCellY, targetCellX] == 1)
+            {
+                return;
+            }
+
+            // Autorisé : positionne Steve exactement sur la cellule cible
+            Canvas.SetLeft(imgPoisson, targetCellX * tileSize);
+            Canvas.SetTop(imgPoisson, targetCellY * tileSize);
+
+            // Après déplacement : vérifie et mange un pellet éventuel
+            EatPelletAt(targetCellX, targetCellY);
         }
 
-        
+
         private void EatPelletAt(int cellX, int cellY)
         {
             if (maze[cellY, cellX] != 2) return;
