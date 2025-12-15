@@ -235,6 +235,9 @@ Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCa
             int currCellX = (int)Math.Round(left / tileSize);
             int currCellY = (int)Math.Round(top / tileSize);
 
+            int rows = maze.GetLength(0);
+            int cols = maze.GetLength(1);
+
             // Calcule la cellule cible selon la direction demandée
             int targetCellX = currCellX;
             int targetCellY = currCellY;
@@ -254,9 +257,29 @@ Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCa
                     break;
             }
 
-            // Vérifie bornes
-            if (targetCellY < 0 || targetCellY >= maze.GetLength(0) ||
-                targetCellX < 0 || targetCellX >= maze.GetLength(1))
+            // Gère le passage de tunnel horizontal : si on sort à gauche ou à droite,
+            // autorise le wrap vers l'autre bord si la cellule côté opposé (même Y) n'est pas un mur.
+            if ((targetCellX < 0 || targetCellX >= cols) && (currentDirection == Direction.Left || currentDirection == Direction.Right))
+            {
+                // cellule opposée (wrap)
+                int wrapX = (targetCellX + cols) % cols;
+
+                // n'autorise le wrap que si la cellule courante n'est pas un mur et la cellule wrap n'est pas un mur
+                if (maze[currCellY, currCellX] != 1 && maze[currCellY, wrapX] != 1)
+                {
+                    targetCellX = wrapX;
+                    targetCellY = currCellY;
+                }
+                else
+                {
+                    // sinon on ne bouge pas
+                    return;
+                }
+            }
+
+            // Vérifie bornes (après tentative de wrap). Si hors limites verticales ou autres cas, on ne bouge pas.
+            if (targetCellY < 0 || targetCellY >= rows ||
+                targetCellX < 0 || targetCellX >= cols)
             {
                 // hors du labyrinthe : on ne bouge pas
                 return;
