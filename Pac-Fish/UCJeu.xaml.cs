@@ -69,6 +69,9 @@ namespace Pac_Fish
         private int score = 0;
         private TextBlock scoreText;
 
+        // Map des pellets pour accès O(1) lors de la consommation
+        private readonly Dictionary<(int X, int Y), Ellipse> pelletMap = new();
+
         public UCJeu()
         {
             InitializeComponent();
@@ -129,9 +132,14 @@ namespace Pac_Fish
                             Height = 8,
                             Fill = Brushes.Gold
                         };
-                        Canvas.SetLeft(pellet, x * tileSize + 11);
-                        Canvas.SetTop(pellet, y * tileSize + 11);
+                        double left = x * tileSize + 11;
+                        double top = y * tileSize + 11;
+                        Canvas.SetLeft(pellet, left);
+                        Canvas.SetTop(pellet, top);
                         MazeCanvas.Children.Add(pellet);
+
+                        // Enregistre l'ellipse dans la map pour accès rapide
+                        pelletMap[(x, y)] = pellet;
                     }
                 }
             }
@@ -199,30 +207,10 @@ namespace Pac_Fish
         /*
         Timer de déplacement : déplace l'image du poisson selon la direction courante,
         vérifie si la nouvelle position correspond à une cellule contenant un pellet (2),
-        gère la consommation du pellet (mise à 0 dans le tableau), la suppression graphique
+        gère la consommation du pellet via EatPelletAt (mise à 0 dans le tableau), la suppression graphique
         de l'ellipse correspondante et la mise à jour du score.
-        
-        PSEUDOCODE :
-        - Si la direction actuelle est None : ne rien faire et sortir.
-        - Récupérer la position actuelle en pixels de l'image (left, top).
-          - Si NaN, remplacer par 0 pour éviter exceptions.
-        - Appliquer un déplacement en pixels selon la direction et MainWindow.PasPoisson.
-        - Après déplacement, récupérer la nouvelle position (newLeft, newTop).
-        - Convertir la position en coordonnées de cellule :
-          - cellX = arrondi(newLeft / tileSize)
-          - cellY = arrondi(newTop / tileSize)
-        - Vérifier que cellX/cellY sont dans les limites du tableau `maze`.
-        - Si la cellule contient un pellet (valeur 2) :
-          - Mettre `maze[cellY, cellX] = 0` pour marquer la pellet mangée.
-          - Incrémenter `score` (ici +10).
-          - Rechercher dans `MazeCanvas.Children` une `Ellipse` positionnée aux coordonnées attendues
-            (on compare avec la position calculée utilisée lors du dessin : x * tileSize + 11, y * tileSize + 11).
-            - Si trouvée, la supprimer de `MazeCanvas.Children`.
-          - Mettre à jour le texte du `scoreText` si non null.
-        - Notes d'implémentation :
-          - Les comparaisons de position utilisent une tolérance faible (0.1) pour éviter les erreurs
-            dues aux conversions en double.
-          - On garde la logique de Round pour correspondre au placement par cellule.
+
+        Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCanvas.Children.
         */
         private void MoveTimer_Tick(object? sender, EventArgs e)
         {
@@ -263,40 +251,33 @@ namespace Pac_Fish
             // Vérifie que les indices de cellule sont bien dans les bornes du tableau `maze`
             if (cellY >= 0 && cellY < maze.GetLength(0) && cellX >= 0 && cellX < maze.GetLength(1))
             {
-                // Si la cellule contient un pellet (2), on le mange
-                if (maze[cellY, cellX] == 2)
-                {
-                    // Met à jour la donnée logique : plus de pellet dans la cellule
-                    maze[cellY, cellX] = 0;
+                // Utilise la méthode optimisée pour consommer le pellet si présent
+                EatPelletAt(cellX, cellY);
+            }
+        }
 
-                    // Incrémente le score (valeur choisie : 10 par pellet)
-                    score += 10;
+        
+        private void EatPelletAt(int cellX, int cellY)
+        {
+            if (maze[cellY, cellX] != 2) return;
 
-                    // Calcul des positions attendues de l'ellipse (mêmes offsets que lors du DrawMaze)
-                    double expectedLeft = cellX * tileSize + 11;
-                    double expectedTop = cellY * tileSize + 11;
+            // Met à jour la donnée logique : plus de pellet dans la cellule
+            maze[cellY, cellX] = 0;
 
-                    // Recherche de l'ellipse correspondante dans le canvas.
-                    // On utilise une tolérance pour éviter les faux négatifs dus aux conversions numériques.
-                    const double tolerance = 0.1;
-                    var pelletToRemove = MazeCanvas.Children
-                        .OfType<Ellipse>()
-                        .FirstOrDefault(el =>
-                            Math.Abs(Canvas.GetLeft(el) - expectedLeft) < tolerance &&
-                            Math.Abs(Canvas.GetTop(el) - expectedTop) < tolerance);
+            // Incrémente le score (valeur choisie : 10 par pellet)
+            score += 10;
 
-                    // Si trouvée, suppression graphique du pellet
-                    if (pelletToRemove != null)
-                    {
-                        MazeCanvas.Children.Remove(pelletToRemove);
-                    }
+            // Retire l'ellipse du Canvas si elle existe dans la map
+            if (pelletMap.TryGetValue((cellX, cellY), out var pellet))
+            {
+                MazeCanvas.Children.Remove(pellet);
+                pelletMap.Remove((cellX, cellY));
+            }
 
-                    // Mise à jour de l'affichage du score si le TextBlock existe
-                    if (scoreText != null)
-                    {
-                        scoreText.Text = $"Score: {score}";
-                    }
-                }
+            // Mise à jour de l'affichage du score si le TextBlock existe
+            if (scoreText != null)
+            {
+                scoreText.Text = $"Score: {score}";
             }
         }
 
