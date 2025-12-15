@@ -8,6 +8,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="964" d:DesignWidth="854" Loaded="UserControl_Loaded">
     <Canvas x:Name="MazeCanvas">
-        <Image x:Name="imgPoisson" gif:ImageBehavior.AnimatedSource="/sprites/steve.gif" Stretch="Fill" Canvas.Left="323" Canvas.Top="269" Height="147" Width="154"/>
+        <Image x:Name="imgPoisson" gif:ImageBehavior.AnimatedSource="/sprites/steve.gif" Stretch="Fill" Canvas.Left="365" Canvas.Top="310" Height="47" Width="47"/>
     </Canvas>
 </UserControl>
