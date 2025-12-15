@@ -23,11 +23,12 @@ namespace Pac_Fish
         public static int PasPoisson { get; set; } = 2;
 
         // intervalle de déplacement en millisecondes (valeur globale de vitesse)
-        public static int MoveIntervalMs { get; set; } = 150;
+        public static int MoveIntervalMs { get; set; } = 400;
 
         public MainWindow()
         {
             InitializeComponent();
+            ResizeMode = ResizeMode.NoResize; // empêche le redimensionnement de la fenêtre
             AfficheDemarrage();
         }
 
@@ -103,6 +104,12 @@ namespace Pac_Fish
                 UCDebug uc = new UCDebug();
                 ZoneJeu.Content = uc;
             }
+        }
+
+        public void AfficheFinPartie() //affiche la page de fin de partie
+        {
+            UCFinPartie uc = new UCFinPartie();
+            ZoneJeu.Content = uc;
         }
 
         private RoutedEventHandler Fermer() //ferme l'application

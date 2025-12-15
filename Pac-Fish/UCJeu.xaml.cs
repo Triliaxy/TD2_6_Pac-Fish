@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,18 +17,18 @@ namespace Pac_Fish
     /// </summary>
     public partial class UCJeu : UserControl
     {
-        // Configuration / constantes
-        private const int DefaultTileSize = 30;
-        private const double IntervalReductionFactor = 0.9; // 0.9 = +10% de vitesse
-        private const double MinIntervalMs = 30;
+        // Configuration / constants
+        private const int DefaultTilePixelSize = 30;
+        private const double SpeedIncreaseFactor = 0.7; // 0.9 = +30% de vitesse
+        private const double MinimumMoveIntervalInMilliseconds = 30;
 
         // Etat du labyrinthe et des pellets
         // clé = (X=colonne, Y=ligne)
-        private readonly Dictionary<(int X, int Y), Ellipse> pelletMap = new();
-        private readonly List<(int X, int Y)> initialPelletPositions = new();
+        private readonly Dictionary<(int Column, int Row), Ellipse> pelletDictionary = new();
+        private readonly List<(int Column, int Row)> initialPelletCoordinates = new();
 
         // Représentation du labyrinthe (0=vide,1=mur,2=pellet)
-        public static int[,] maze =
+        public static int[,] mazeGrid =
         {
             {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
             {1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1},
@@ -41,7 +42,7 @@ namespace Pac_Fish
             {1,1,1,1,1,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,0,0,0,0,0,0,0,0,0,0,1,1,2,1,1,1,1,1,1},
-            {1,1,1,1,1,1,2,1,1,0,1,1,1,1,1,1,1,1,0,1,1,2,1,1,1,1,1,1},
+            {1,1,1,1,1,1,2,1,1,0,1,1,1,0,0,1,1,1,0,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,0,1,0,0,0,0,0,0,1,0,1,1,2,1,1,1,1,1,1},
             {0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0},
             {1,1,1,1,1,1,2,1,1,0,1,0,0,0,0,0,0,1,0,1,1,2,1,1,1,1,1,1},
@@ -63,36 +64,41 @@ namespace Pac_Fish
         };
 
         // Taille d'une case (modifiable si besoin)
-        private int tileSize = DefaultTileSize;
+        private int tilePixelSize = DefaultTilePixelSize;
 
         // Déplacements et timer
         private enum Direction { None, Up, Down, Left, Right }
-        private Direction currentDirection = Direction.None;
-        private DispatcherTimer moveTimer;
+        private Direction currentMovementDirection = Direction.None;
+        private DispatcherTimer gameLoopTimer;
+
+        // Etat des chats: dernière direction (sans dictionnaire)
+        private readonly Image[] enemyImages;
+        private readonly Direction[] enemyLastDirections;
+        private readonly Random randomGenerator = new Random();
 
         // Score
-        private int score = 0;
-        private TextBlock scoreText;
+        private int currentScore = 0;
+        private TextBlock scoreDisplay;
 
         // Indicateur pour ne dessiner les murs/pellets qu'une seule fois
-        private bool mazeDrawn = false;
+        // private bool isMazeAlreadyDrawn = false;
 
         // Brushes et effets réutilisables (évite réallocation tous les ticks)
-        private readonly LinearGradientBrush coralFillBrush;
-        private readonly Brush coralStrokeBrush = new SolidColorBrush(Color.FromRgb(220, 100, 80));
-        private readonly DropShadowEffect coralEffect;
-        private readonly RadialGradientBrush bubbleFillBrush;
-        private readonly DropShadowEffect bubbleEffect;
+        private readonly LinearGradientBrush wallFillBrush;
+        private readonly Brush wallStrokeBrush = new SolidColorBrush(Color.FromRgb(220, 100, 80));
+        private readonly DropShadowEffect wallDropShadow;
+        private readonly RadialGradientBrush pelletFillBrush;
+        private readonly DropShadowEffect pelletDropShadow;
 
         public UCJeu()
         {
             InitializeComponent();
 
             // Prépare les brushes/effets une seule fois
-            coralFillBrush = CreateCoralBrush();
-            coralFillBrush.Freeze();
+            wallFillBrush = CreateWallGradientBrush();
+            wallFillBrush.Freeze();
 
-            coralEffect = new DropShadowEffect
+            wallDropShadow = new DropShadowEffect
             {
                 Color = Color.FromRgb(255, 200, 180),
                 BlurRadius = 6,
@@ -100,10 +106,10 @@ namespace Pac_Fish
                 Opacity = 0.25
             };
 
-            bubbleFillBrush = CreateBubbleBrush();
-            bubbleFillBrush.Freeze();
+            pelletFillBrush = CreatePelletGradientBrush();
+            pelletFillBrush.Freeze();
 
-            bubbleEffect = new DropShadowEffect
+            pelletDropShadow = new DropShadowEffect
             {
                 Color = Colors.LightSkyBlue,
                 BlurRadius = 6,
@@ -111,154 +117,163 @@ namespace Pac_Fish
                 Opacity = 0.5
             };
 
+            // Initialiser la collection de chats et tableaux de directions
+            enemyImages = new[] { popcat1, popcat2, popcat3, popcat4, popcat5, popcat6 };
+            enemyLastDirections = new Direction[enemyImages.Length];
+            for (int i = 0; i < enemyLastDirections.Length; i++) enemyLastDirections[i] = Direction.None;
+
             // Gestion initiale
-            DrawMaze(); // ne dessinera qu'une fois grâce à mazeDrawn
-            InitializePlayerSizeAndPosition();
-            CreateScoreText();
+            RenderMazeGrid(); // ne dessinera qu'une fois grâce à mazeDrawn
+            SetupCharacters();
+            InitializeScoreDisplay();
 
             // configure le timer de déplacement selon la variable globale
-            moveTimer = new DispatcherTimer
+            gameLoopTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(MainWindow.MoveIntervalMs)
             };
-            moveTimer.Tick += MoveTimer_Tick;
-            moveTimer.Start();
+            gameLoopTimer.Tick += GameLoopTimer_Tick;
+            gameLoopTimer.Start();
         }
 
         // Prépare et ajoute le TextBlock de score
-        private void CreateScoreText()
+        private void InitializeScoreDisplay()
         {
-            if (scoreText != null) return;
+            if (scoreDisplay != null) return;
 
-            scoreText = new TextBlock
+            scoreDisplay = new TextBlock
             {
                 Foreground = Brushes.White,
                 FontSize = 16,
                 Text = "Score: 0"
             };
-            Canvas.SetLeft(scoreText, 6);
-            Canvas.SetTop(scoreText, 6);
-            MazeCanvas.Children.Add(scoreText);
+            Canvas.SetLeft(scoreDisplay, 6);
+            Canvas.SetTop(scoreDisplay, 6);
+            MazeCanvas.Children.Add(scoreDisplay);
         }
 
         // Dessine murs et pellets (exécuté une seule fois)
-        void DrawMaze()
+        void RenderMazeGrid()
         {
-            if (MazeCanvas == null || mazeDrawn) return;
+            // if (MazeCanvas == null || isMazeAlreadyDrawn) return;
 
-            for (int y = 0; y < maze.GetLength(0); y++)
+            for (int rowIndex = 0; rowIndex < mazeGrid.GetLength(0); rowIndex++)
             {
-                for (int x = 0; x < maze.GetLength(1); x++)
+                for (int columnIndex = 0; columnIndex < mazeGrid.GetLength(1); columnIndex++)
                 {
-                    if (maze[y, x] == 1)
+                    if (mazeGrid[rowIndex, columnIndex] == 1)
                     {
-                        var coral = CreateCoral(x, y);
-                        MazeCanvas.Children.Add(coral);
+                        var wallVisual = CreateWallVisual(columnIndex, rowIndex);
+                        MazeCanvas.Children.Add(wallVisual);
                     }
-                    else if (maze[y, x] == 2)
+                    else if (mazeGrid[rowIndex, columnIndex] == 2)
                     {
-                        var pellet = CreateBubble(x, y);
-                        MazeCanvas.Children.Add(pellet);
-                        pelletMap[(x, y)] = pellet;
-                        initialPelletPositions.Add((x, y));
+                        var pelletVisual = CreatePelletVisual(columnIndex, rowIndex);
+                        MazeCanvas.Children.Add(pelletVisual);
+                        pelletDictionary[(columnIndex, rowIndex)] = pelletVisual;
+                        initialPelletCoordinates.Add((columnIndex, rowIndex));
                     }
                 }
             }
 
-            mazeDrawn = true;
+            // isMazeAlreadyDrawn = true;
         }
 
         // Crée un rectangle "corail" (utilise les brushes/effets partagés)
-        private Rectangle CreateCoral(int x, int y)
+        private Rectangle CreateWallVisual(int columnIndex, int rowIndex)
         {
-            var coral = new Rectangle
+            var wallVisual = new Rectangle
             {
-                Width = tileSize,
-                Height = tileSize,
-                RadiusX = Math.Max(4, tileSize * 0.12),
-                RadiusY = Math.Max(4, tileSize * 0.12),
-                Stroke = coralStrokeBrush,
+                Width = tilePixelSize,
+                Height = tilePixelSize,
+                RadiusX = Math.Max(4, tilePixelSize * 0.12),
+                RadiusY = Math.Max(4, tilePixelSize * 0.12),
+                Stroke = wallStrokeBrush,
                 StrokeThickness = 1.0,
-                Fill = coralFillBrush,
-                Effect = coralEffect
+                Fill = wallFillBrush,
+                Effect = wallDropShadow
             };
 
-            Canvas.SetLeft(coral, x * tileSize);
-            Canvas.SetTop(coral, y * tileSize);
-            return coral;
+            Canvas.SetLeft(wallVisual, columnIndex * tilePixelSize);
+            Canvas.SetTop(wallVisual, rowIndex * tilePixelSize);
+            return wallVisual;
         }
 
         // Crée la bulle visuelle (pellet) — réutilise la même Brush/Effect
-        private Ellipse CreateBubble(int x, int y)
+        private Ellipse CreatePelletVisual(int columnIndex, int rowIndex)
         {
-            double size = Math.Max(8, tileSize * 0.4);
+            double size = Math.Max(8, tilePixelSize * 0.4);
 
-            var bubble = new Ellipse
+            var pelletVisual = new Ellipse
             {
                 Width = size,
                 Height = size,
                 Stroke = Brushes.White,
                 StrokeThickness = 1,
                 Opacity = 0.95,
-                Fill = bubbleFillBrush,
-                Effect = bubbleEffect
+                Fill = pelletFillBrush,
+                Effect = pelletDropShadow
             };
 
-            double left = x * tileSize + (tileSize - size) / 2.0;
-            double top = y * tileSize + (tileSize - size) / 2.0;
-            Canvas.SetLeft(bubble, left);
-            Canvas.SetTop(bubble, top);
+            double positionLeft = columnIndex * tilePixelSize + (tilePixelSize - size) / 2.0;
+            double positionTop = rowIndex * tilePixelSize + (tilePixelSize - size) / 2.0;
+            Canvas.SetLeft(pelletVisual, positionLeft);
+            Canvas.SetTop(pelletVisual, positionTop);
 
-            return bubble;
+            return pelletVisual;
         }
 
         // Initialise la taille et la position du joueur sans ré-allocation inutile
-        private void InitializePlayerSizeAndPosition()
+        private void SetupCharacters()
         {
-            imgPoisson.Width = tileSize;
-            imgPoisson.Height = tileSize;
+            imgPoisson.Width = tilePixelSize;
+            imgPoisson.Height = tilePixelSize;
+            popcat1.Width = tilePixelSize;
+            popcat1.Height = tilePixelSize;
+            popcat2.Width = tilePixelSize;
+            popcat2.Height = tilePixelSize;
+            popcat3.Width = tilePixelSize;
+            popcat3.Height = tilePixelSize;
+            popcat4.Width = tilePixelSize;
+            popcat4.Height = tilePixelSize;
+            popcat5.Width = tilePixelSize;
+            popcat5.Height = tilePixelSize;
+            popcat6.Width = tilePixelSize;
+            popcat6.Height = tilePixelSize;
 
-            int rows = maze.GetLength(0);
-            int cols = maze.GetLength(1);
+            int rowCount = mazeGrid.GetLength(0);
+            int columnCount = mazeGrid.GetLength(1);
 
-            int startRow = Math.Max(0, rows - 2);
-            int centerCol = cols / 2;
+            int startingPositionX = 8;
+            int startingPositionY = 14;
 
-            int cellX = centerCol;
-            int cellY = startRow;
-            bool found = false;
 
-            for (int y = startRow; y >= 0 && !found; y--)
-            {
-                for (int offset = 0; offset <= cols / 2 && !found; offset++)
-                {
-                    int left = centerCol - offset;
-                    int right = centerCol + offset;
+            Canvas.SetLeft(imgPoisson, startingPositionX * tilePixelSize);
+            Canvas.SetTop(imgPoisson, startingPositionY * tilePixelSize);
 
-                    if (left >= 0 && maze[y, left] != 1)
-                    {
-                        cellX = left;
-                        cellY = y;
-                        found = true;
-                        break;
-                    }
+            Canvas.SetLeft(popcat1, 11 * tilePixelSize);
+            Canvas.SetTop(popcat1, 13 * tilePixelSize);
 
-                    if (right < cols && maze[y, right] != 1)
-                    {
-                        cellX = right;
-                        cellY = y;
-                        found = true;
-                        break;
-                    }
-                }
-            }
+            Canvas.SetLeft(popcat2, 12 * tilePixelSize);
+            Canvas.SetTop(popcat2, 15 * tilePixelSize);
 
-            Canvas.SetLeft(imgPoisson, cellX * tileSize);
-            Canvas.SetTop(imgPoisson, cellY * tileSize);
+            Canvas.SetLeft(popcat3, 13 * tilePixelSize);
+            Canvas.SetTop(popcat3, 14 * tilePixelSize);
+
+            Canvas.SetLeft(popcat4, 14 * tilePixelSize);
+            Canvas.SetTop(popcat4, 14 * tilePixelSize);
+
+            Canvas.SetLeft(popcat5, 15 * tilePixelSize);
+            Canvas.SetTop(popcat5, 15 * tilePixelSize);
+
+            Canvas.SetLeft(popcat6, 16 * tilePixelSize);
+            Canvas.SetTop(popcat6, 13 * tilePixelSize);
+
+
 
             try
             {
-                MainWindow.PasPoisson = tileSize;
+                MainWindow.PasPoisson = tilePixelSize;
             }
             catch
             {
@@ -274,47 +289,82 @@ namespace Pac_Fish
 
         Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCanvas.Children.
         */
-        private void MoveTimer_Tick(object? sender, EventArgs e)
+        private void GameLoopTimer_Tick(object? sender, EventArgs e)
         {
-            if (currentDirection == Direction.None) return;
+            if (currentMovementDirection != Direction.None)
+            {
+                MovePlayerCharacter();
+            }
+            MoveEnemiesRandomly();
+            CheckForCollisions();
+        }
 
-            double left = Canvas.GetLeft(imgPoisson);
-            double top = Canvas.GetTop(imgPoisson);
-            if (double.IsNaN(left)) left = 0;
-            if (double.IsNaN(top)) top = 0;
+        private void CheckForCollisions()
+        {
+            //position du joueur
+            double playerLeft = Canvas.GetLeft(imgPoisson);
+            double playerTop = Canvas.GetTop(imgPoisson);
+            int playerColumnIndex = (int)Math.Round(playerLeft / tilePixelSize);
+            int playerRowIndex = (int)Math.Round(playerTop / tilePixelSize);
 
-            int currCellX = (int)Math.Round(left / tileSize);
-            int currCellY = (int)Math.Round(top / tileSize);
+            foreach (var enemyImage in enemyImages)
+            {
+                double enemyLeft = Canvas.GetLeft(enemyImage);
+                double enemyTop = Canvas.GetTop(enemyImage);
+                int enemyColumnIndex = (int)Math.Round(enemyLeft / tilePixelSize);
+                int enemyRowIndex = (int)Math.Round(enemyTop / tilePixelSize);
 
-            int rows = maze.GetLength(0);
-            int cols = maze.GetLength(1);
+                if (playerColumnIndex == enemyColumnIndex && playerRowIndex == enemyRowIndex)
+                {
+                    gameLoopTimer.Stop();
+                    if (Application.Current.MainWindow is MainWindow mw)
+                    {
+                        mw.AfficheFinPartie();
+                    }
+                    break;
+                }
+            }
+        }
 
-            int targetCellX = currCellX;
-            int targetCellY = currCellY;
-            switch (currentDirection)
+        private void MovePlayerCharacter()
+        {
+            double positionLeft = Canvas.GetLeft(imgPoisson);
+            double positionTop = Canvas.GetTop(imgPoisson);
+            if (double.IsNaN(positionLeft)) positionLeft = 0;
+            if (double.IsNaN(positionTop)) positionTop = 0;
+
+            int currentColumnIndex = (int)Math.Round(positionLeft / tilePixelSize);
+            int currentRowIndex = (int)Math.Round(positionTop / tilePixelSize);
+
+            int rowCount = mazeGrid.GetLength(0);
+            int columnCount = mazeGrid.GetLength(1);
+
+            int targetColumnIndex = currentColumnIndex;
+            int targetRowIndex = currentRowIndex;
+            switch (currentMovementDirection)
             {
                 case Direction.Up:
-                    targetCellY = currCellY - 1;
+                    targetRowIndex = currentRowIndex - 1;
                     break;
                 case Direction.Down:
-                    targetCellY = currCellY + 1;
+                    targetRowIndex = currentRowIndex + 1;
                     break;
                 case Direction.Left:
-                    targetCellX = currCellX - 1;
+                    targetColumnIndex = currentColumnIndex - 1;
                     break;
                 case Direction.Right:
-                    targetCellX = currCellX + 1;
+                    targetColumnIndex = currentColumnIndex + 1;
                     break;
             }
 
-            // Wrap horizontal si possible
-            if ((targetCellX < 0 || targetCellX >= cols) && (currentDirection == Direction.Left || currentDirection == Direction.Right))
+            //Wrap horizontal si possible
+            if ((targetColumnIndex < 0 || targetColumnIndex >= columnCount) && (currentMovementDirection == Direction.Left || currentMovementDirection == Direction.Right))
             {
-                int wrapX = (targetCellX + cols) % cols;
-                if (maze[currCellY, currCellX] != 1 && maze[currCellY, wrapX] != 1)
+                int wrapColumnIndex = (targetColumnIndex + columnCount) % columnCount;
+                if (mazeGrid[currentRowIndex, currentColumnIndex] != 1 && mazeGrid[currentRowIndex, wrapColumnIndex] != 1)
                 {
-                    targetCellX = wrapX;
-                    targetCellY = currCellY;
+                    targetColumnIndex = wrapColumnIndex;
+                    targetRowIndex = currentRowIndex;
                 }
                 else
                 {
@@ -322,70 +372,144 @@ namespace Pac_Fish
                 }
             }
 
-            if (targetCellY < 0 || targetCellY >= rows ||
-                targetCellX < 0 || targetCellX >= cols)
+            if (targetRowIndex < 0 || targetRowIndex >= rowCount ||
+                targetColumnIndex < 0 || targetColumnIndex >= columnCount)
             {
                 return;
             }
 
-            if (maze[targetCellY, targetCellX] == 1) return;
+            if (mazeGrid[targetRowIndex, targetColumnIndex] == 1) return;
 
-            Canvas.SetLeft(imgPoisson, targetCellX * tileSize);
-            Canvas.SetTop(imgPoisson, targetCellY * tileSize);
+            Canvas.SetLeft(imgPoisson, targetColumnIndex * tilePixelSize);
+            Canvas.SetTop(imgPoisson, targetRowIndex * tilePixelSize);
 
-            EatPelletAt(targetCellX, targetCellY);
+            TryToEatPellet(targetColumnIndex, targetRowIndex);
         }
 
-        private void EatPelletAt(int cellX, int cellY)
+        //déplacement aléatoire des chats avec contrainte: pas de demi-tour immédiat
+        private void MoveEnemiesRandomly()
         {
-            if (maze[cellY, cellX] != 2) return;
+            int rowCount = mazeGrid.GetLength(0);
+            int columnCount = mazeGrid.GetLength(1);
 
-            maze[cellY, cellX] = 0;
-            score += 10;
-
-            if (pelletMap.TryGetValue((cellX, cellY), out var pellet))
+            for (int i = 0; i < enemyImages.Length; i++)
             {
-                MazeCanvas.Children.Remove(pellet);
-                pelletMap.Remove((cellX, cellY));
+                var enemyImage = enemyImages[i];
+                double positionLeft = Canvas.GetLeft(enemyImage);
+                double positionTop = Canvas.GetTop(enemyImage);
+                //if (double.IsNaN(left)) left = 0;
+                //if (double.IsNaN(top)) top = 0;
+
+                int columnIndex = (int)Math.Round(positionLeft / tilePixelSize);
+                int rowIndex = (int)Math.Round(positionTop / tilePixelSize);
+
+                var lastDirection = enemyLastDirections[i];
+
+                //liste des directions possibles qui sont pas des murs
+                var possibleDirections = new List<Direction>(4);
+                if (rowIndex - 1 >= 0 && mazeGrid[rowIndex - 1, columnIndex] != 1) possibleDirections.Add(Direction.Up); //autorisé si y-1 est dans la grille et si la tuile au dessus n’est pas un mur ( 1 )
+                if (rowIndex + 1 < rowCount && mazeGrid[rowIndex + 1, columnIndex] != 1) possibleDirections.Add(Direction.Down);
+                if (columnIndex - 1 >= 0 && mazeGrid[rowIndex, columnIndex - 1] != 1) possibleDirections.Add(Direction.Left);
+                if (columnIndex + 1 < columnCount && mazeGrid[rowIndex, columnIndex + 1] != 1) possibleDirections.Add(Direction.Right);
+
+                // Retire le demi-tour immédiat (inverse de last)
+                Direction oppositeDirection = GetOppositeDirection(lastDirection); //renvoie la direction opposée à la derniere
+                if (lastDirection != Direction.None)//si le chat s’est déplacé, retirer le demi-tour
+                {
+                    possibleDirections.Remove(oppositeDirection);
+                }
+
+                if (possibleDirections.Count == 0)
+                {
+                    // si bloqué, autoriser demi-tour
+                    possibleDirections = new List<Direction> { oppositeDirection };
+                }
+                
+                var chosenDirection = possibleDirections[randomGenerator.Next(possibleDirections.Count)];//choisit une direction au hasard parmi les options restantes
+                int newColumnIndex = columnIndex, newRowIndex = rowIndex;
+                switch (chosenDirection)
+                {
+                    case Direction.Up: newRowIndex = rowIndex - 1; break;
+                    case Direction.Down: newRowIndex = rowIndex + 1; break;
+                    case Direction.Left: newColumnIndex = columnIndex - 1; break;
+                    case Direction.Right: newColumnIndex = columnIndex + 1; break;
+                }
+
+                // Applique le déplacement
+                Canvas.SetLeft(enemyImage, newColumnIndex * tilePixelSize);
+                Canvas.SetTop(enemyImage, newRowIndex * tilePixelSize);
+                enemyLastDirections[i] = chosenDirection;//sauvegarde la direction choisie comme dernière direction
+            }
+        }
+
+        private static Direction GetOppositeDirection(Direction lastDirection)
+        {
+
+            switch(lastDirection)
+            {
+                case Direction.Up:
+                    return Direction.Down;
+                case Direction.Down:
+                    return Direction.Up;
+                case Direction.Left:
+                    return Direction.Right;
+                case Direction.Right:
+                    return Direction.Left;
+                default:
+                    return Direction.None;
+            }
+        }
+
+        private void TryToEatPellet(int cellColumnIndex, int cellRowIndex)
+        {
+            if (mazeGrid[cellRowIndex, cellColumnIndex] != 2) return;
+
+            mazeGrid[cellRowIndex, cellColumnIndex] = 0;
+            currentScore += 10;
+
+            if (pelletDictionary.TryGetValue((cellColumnIndex, cellRowIndex), out var pelletVisual))
+            {
+                MazeCanvas.Children.Remove(pelletVisual);
+                pelletDictionary.Remove((cellColumnIndex, cellRowIndex));
             }
 
-            if (scoreText != null)
+            if (scoreDisplay != null)
             {
-                scoreText.Text = $"Score: {score}";
+                scoreDisplay.Text = $"Score: {currentScore}";
             }
 
-            if (pelletMap.Count == 0)
+            if (pelletDictionary.Count == 0)
             {
-                ResetPelletsAndIncreaseSpeed();
+                ResetLevel();
             }
         }
 
         // Réinitialise les pellets à leurs positions initiales sans toucher à la position du joueur
-        private void ResetPelletsAndIncreaseSpeed()
+        private void ResetLevel()
         {
-            foreach (var (x, y) in initialPelletPositions)
+            foreach (var (columnIndex, rowIndex) in initialPelletCoordinates)
             {
-                if (maze[y, x] != 1)
+                if (mazeGrid[rowIndex, columnIndex] != 1)
                 {
-                    maze[y, x] = 2;
-                    if (!pelletMap.ContainsKey((x, y)))
+                    mazeGrid[rowIndex, columnIndex] = 2;
+                    if (!pelletDictionary.ContainsKey((columnIndex, rowIndex)))
                     {
-                        var pellet = CreateBubble(x, y);
-                        MazeCanvas.Children.Add(pellet);
-                        pelletMap[(x, y)] = pellet;
+                        var pelletVisual = CreatePelletVisual(columnIndex, rowIndex);
+                        MazeCanvas.Children.Add(pelletVisual);
+                        pelletDictionary[(columnIndex, rowIndex)] = pelletVisual;
                     }
                 }
             }
 
-            if (moveTimer != null)
+            if (gameLoopTimer != null)
             {
-                double currentMs = moveTimer.Interval.TotalMilliseconds;
-                double newMs = Math.Max(MinIntervalMs, currentMs * IntervalReductionFactor);
-                moveTimer.Interval = TimeSpan.FromMilliseconds(newMs);
+                double currentIntervalMs = gameLoopTimer.Interval.TotalMilliseconds;
+                double newIntervalMs = Math.Max(MinimumMoveIntervalInMilliseconds, currentIntervalMs * SpeedIncreaseFactor);
+                gameLoopTimer.Interval = TimeSpan.FromMilliseconds(newIntervalMs);
 
                 try
                 {
-                    MainWindow.MoveIntervalMs = (int)newMs;
+                    MainWindow.MoveIntervalMs = (int)newIntervalMs;
                 }
                 catch
                 {
@@ -404,11 +528,11 @@ namespace Pac_Fish
         {
             switch (e.Key)
             {
-                case Key.Up when currentDirection == Direction.Up:
-                case Key.Down when currentDirection == Direction.Down:
-                case Key.Left when currentDirection == Direction.Left:
-                case Key.Right when currentDirection == Direction.Right:
-                    currentDirection = Direction.None;
+                case Key.Up when currentMovementDirection == Direction.Up:
+                case Key.Down when currentMovementDirection == Direction.Down:
+                case Key.Left when currentMovementDirection == Direction.Left:
+                case Key.Right when currentMovementDirection == Direction.Right:
+                    currentMovementDirection = Direction.None;
                     break;
             }
         }
@@ -418,22 +542,22 @@ namespace Pac_Fish
             switch (e.Key)
             {
                 case Key.Up:
-                    currentDirection = Direction.Up;
+                    currentMovementDirection = Direction.Up;
                     break;
                 case Key.Down:
-                    currentDirection = Direction.Down;
+                    currentMovementDirection = Direction.Down;
                     break;
                 case Key.Left:
-                    currentDirection = Direction.Left;
+                    currentMovementDirection = Direction.Left;
                     break;
                 case Key.Right:
-                    currentDirection = Direction.Right;
+                    currentMovementDirection = Direction.Right;
                     break;
             }
         }
 
         // Factories pour Brushes/Effets (séparées pour lisibilité)
-        private static LinearGradientBrush CreateCoralBrush()
+        private static LinearGradientBrush CreateWallGradientBrush()
         {
             var brush = new LinearGradientBrush
             {
@@ -447,7 +571,7 @@ namespace Pac_Fish
             return brush;
         }
 
-        private static RadialGradientBrush CreateBubbleBrush()
+        private static RadialGradientBrush CreatePelletGradientBrush()
         {
             var brush = new RadialGradientBrush
             {
