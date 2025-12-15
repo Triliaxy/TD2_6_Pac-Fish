@@ -22,6 +22,9 @@ namespace Pac_Fish
         public static string Perso { get; set; }
         public static int PasPoisson { get; set; } = 2;
 
+        // intervalle de déplacement en millisecondes (valeur globale de vitesse)
+        public static int MoveIntervalMs { get; set; } = 150;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -91,7 +94,7 @@ namespace Pac_Fish
             uc.butValiderPara.Click += AfficheAcceuil; //quand on clique sur le bouton valider, on affiche la page d'acceuil
             uc.Btn_utiliser.Click += AfficheDebug; //quand on clique sur le bouton utiliser, on affiche la page de debug
         }
-        
+
         private void AfficheDebug(object sender, RoutedEventArgs e) //affiche la page de debug
         {
             //faire la vérification du code de triche ici avant d'afficher la page de debug
@@ -107,6 +110,6 @@ namespace Pac_Fish
             return (sender, e) => { Application.Current.Shutdown(); }; //trouver la signification de la ligne de pourquoi ça se ferme avec ça
         }
 
-        
+
     }
 }
