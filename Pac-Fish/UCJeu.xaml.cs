@@ -115,15 +115,8 @@ namespace Pac_Fish
                 {
                     if (maze[y, x] == 1)
                     {
-                        var wall = new Rectangle
-                        {
-                            Width = tileSize,
-                            Height = tileSize,
-                            Fill = Brushes.Blue
-                        };
-                        Canvas.SetLeft(wall, x * tileSize);
-                        Canvas.SetTop(wall, y * tileSize);
-                        MazeCanvas.Children.Add(wall);
+                        var coral = CreateCoral(x, y);
+                        MazeCanvas.Children.Add(coral);
                     }
                     else if (maze[y, x] == 2)
                     {
@@ -141,6 +134,50 @@ namespace Pac_Fish
                     }
                 }
             }
+        }
+
+        private Rectangle CreateCoral(int x, int y)
+        {
+            // crée un "corail" visuel : rectangle arrondi avec dégradé et ombre
+            var coral = new Rectangle
+            {
+                Width = tileSize,
+                Height = tileSize,
+                RadiusX = Math.Max(4, tileSize * 0.12),
+                RadiusY = Math.Max(4, tileSize * 0.12),
+                Stroke = new SolidColorBrush(Color.FromRgb(220, 100, 80)),
+                StrokeThickness = 1.0
+            };
+
+            // dégradé "corail"
+            var brush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 127, 80), 0.0));  // coral
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 160, 122), 0.45)); // light coral
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(255, 99, 71), 0.8));    // tomato-ish
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(200, 70, 60), 1.0));    // darker edge
+            coral.Fill = brush;
+
+            // léger relief / texture simulée par un effet d'ombre intérieure simulée avec DropShadow léger
+            coral.Effect = new DropShadowEffect
+            {
+                Color = Color.FromRgb(255, 200, 180),
+                BlurRadius = 6,
+                ShadowDepth = 0,
+                Opacity = 0.25
+            };
+
+            // positionne la brique corail
+            Canvas.SetLeft(coral, x * tileSize);
+            Canvas.SetTop(coral, y * tileSize);
+
+            // optionnel : ajouter petits "poches" claires pour casser la surface (sub-ellipses)
+            // pour rester simple et performant on n'ajoute pas d'enfants visuels ici.
+
+            return coral;
         }
 
         private Ellipse CreateBubble(int x, int y)
