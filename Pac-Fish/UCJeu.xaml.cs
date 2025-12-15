@@ -19,7 +19,7 @@ namespace Pac_Fish
     {
         // Configuration / constantes
         private const int DefaultTileSize = 30;
-        private const double IntervalReductionFactor = 0.9; // 0.9 = +10% de vitesse
+        private const double IntervalReductionFactor = 0.7; // 0.9 = +30% de vitesse
         private const double MinIntervalMs = 30;
 
         // Etat du labyrinthe et des pellets
@@ -71,6 +71,11 @@ namespace Pac_Fish
         private Direction currentDirection = Direction.None;
         private DispatcherTimer moveTimer;
 
+        // Etat des chats: dernière direction (sans dictionnaire)
+        private readonly Image[] cats;
+        private readonly Direction[] catLastDirs;
+        private readonly Random rng = new Random();
+
         // Score
         private int score = 0;
         private TextBlock scoreText;
@@ -111,6 +116,11 @@ namespace Pac_Fish
                 ShadowDepth = 0,
                 Opacity = 0.5
             };
+
+            // Initialiser la collection de chats et tableaux de directions
+            cats = new[] { popcat1, popcat2, popcat3, popcat4, popcat5, popcat6 };
+            catLastDirs = new Direction[cats.Length];
+            for (int i = 0; i < catLastDirs.Length; i++) catLastDirs[i] = Direction.None;
 
             // Gestion initiale
             DrawMaze(); // ne dessinera qu'une fois grâce à mazeDrawn
@@ -260,14 +270,6 @@ namespace Pac_Fish
             Canvas.SetTop(popcat6, 13 * tileSize);
 
 
-            //FAIRE DE MÊME POUR POSITIONNER LES CHATS
-
-
-
-
-
-
-
 
             try
             {
@@ -289,8 +291,15 @@ namespace Pac_Fish
         */
         private void MoveTimer_Tick(object? sender, EventArgs e)
         {
-            if (currentDirection == Direction.None) return;
+            if (currentDirection != Direction.None)
+            {
+                MovePlayer();
+            }
+            MoveCatsRandomly();
+        }
 
+        private void MovePlayer()
+        {
             double left = Canvas.GetLeft(imgPoisson);
             double top = Canvas.GetTop(imgPoisson);
             if (double.IsNaN(left)) left = 0;
@@ -347,6 +356,80 @@ namespace Pac_Fish
             Canvas.SetTop(imgPoisson, targetCellY * tileSize);
 
             EatPelletAt(targetCellX, targetCellY);
+        }
+
+        // Déplacement aléatoire des chats avec contrainte: pas de demi-tour immédiat
+        private void MoveCatsRandomly()
+        {
+            int rows = maze.GetLength(0);
+            int cols = maze.GetLength(1);
+
+            for (int i = 0; i < cats.Length; i++)
+            {
+                var cat = cats[i];
+                double left = Canvas.GetLeft(cat);
+                double top = Canvas.GetTop(cat);
+                //if (double.IsNaN(left)) left = 0;
+                //if (double.IsNaN(top)) top = 0;
+
+                int x = (int)Math.Round(left / tileSize);
+                int y = (int)Math.Round(top / tileSize);
+
+                var last = catLastDirs[i];
+
+                //liste des directions possibles qui sont pas des murs
+                var options = new List<Direction>(4);
+                if (y - 1 >= 0 && maze[y - 1, x] != 1) options.Add(Direction.Up); //autorisé si y-1 est dans la grille et si la tuile au dessus n’est pas un mur ( 1 )
+                if (y + 1 < rows && maze[y + 1, x] != 1) options.Add(Direction.Down);
+                if (x - 1 >= 0 && maze[y, x - 1] != 1) options.Add(Direction.Left);
+                if (x + 1 < cols && maze[y, x + 1] != 1) options.Add(Direction.Right);
+
+                // Retire le demi-tour immédiat (inverse de last)
+                Direction opposite = OppositeOf(last); //renvoie la direction opposée à la derniere
+                if (last != Direction.None)//si le chat s’est déplacé, retirer le demi-tour
+                {
+                    options.Remove(opposite);
+                }
+
+                if (options.Count == 0)
+                {
+                    // si bloqué, autoriser demi-tour
+                    options = new List<Direction> { opposite };
+                }
+                
+                var choice = options[rng.Next(options.Count)];//choisit une direction au hasard parmi les options restantes
+                int newX = x, newY = y;
+                switch (choice)
+                {
+                    case Direction.Up: newY = y - 1; break;
+                    case Direction.Down: newY = y + 1; break;
+                    case Direction.Left: newX = x - 1; break;
+                    case Direction.Right: newX = x + 1; break;
+                }
+
+                // Applique le déplacement
+                Canvas.SetLeft(cat, newX * tileSize);
+                Canvas.SetTop(cat, newY * tileSize);
+                catLastDirs[i] = choice;//sauvegarde la direction choisie comme dernière direction
+            }
+        }
+
+        private static Direction OppositeOf(Direction lastDirection)
+        {
+
+            switch(lastDirection)
+            {
+                case Direction.Up:
+                    return Direction.Down;
+                case Direction.Down:
+                    return Direction.Up;
+                case Direction.Left:
+                    return Direction.Right;
+                case Direction.Right:
+                    return Direction.Left;
+                default:
+                    return Direction.None;
+            }
         }
 
         private void EatPelletAt(int cellX, int cellY)

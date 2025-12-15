@@ -23,7 +23,7 @@ namespace Pac_Fish
         public static int PasPoisson { get; set; } = 2;
 
         // intervalle de déplacement en millisecondes (valeur globale de vitesse)
-        public static int MoveIntervalMs { get; set; } = 150;
+        public static int MoveIntervalMs { get; set; } = 400;
 
         public MainWindow()
         {
