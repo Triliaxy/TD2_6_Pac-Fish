@@ -9,5 +9,11 @@
              d:DesignHeight="964" d:DesignWidth="854" Loaded="UserControl_Loaded">
     <Canvas x:Name="MazeCanvas">
         <Image x:Name="imgPoisson" gif:ImageBehavior.AnimatedSource="/sprites/steve.gif" Stretch="Fill" Canvas.Left="323" Canvas.Top="269" Height="147" Width="154"/>
+        <Image x:Name="popcat1" gif:ImageBehavior.AnimatedSource="/sprites/popcat_gif.gif" Stretch="Fill" Canvas.Left="564" Canvas.Top="705" Height="47" Width="47"/>
+        <Image x:Name="popcat2" gif:ImageBehavior.AnimatedSource="/sprites/popcat_gif.gif" Stretch="Fill" Canvas.Left="705" Canvas.Top="705" Height="47" Width="47"/>
+        <Image x:Name="popcat3" gif:ImageBehavior.AnimatedSource="/sprites/popcat_gif.gif" Stretch="Fill" Canvas.Left="658" Canvas.Top="658" Height="47" Width="47"/>
+        <Image x:Name="popcat4" gif:ImageBehavior.AnimatedSource="/sprites/popcat_gif.gif" Stretch="Fill" Canvas.Left="611" Canvas.Top="658" Height="47" Width="47"/>
+        <Image x:Name="popcat5" gif:ImageBehavior.AnimatedSource="/sprites/popcat_gif.gif" Stretch="Fill" Canvas.Left="611" Canvas.Top="658" Height="47" Width="47"/>
+        <Image x:Name="popcat6" gif:ImageBehavior.AnimatedSource="/sprites/popcat_gif.gif" Stretch="Fill" Canvas.Left="611" Canvas.Top="658" Height="47" Width="47"/>
     </Canvas>
 </UserControl>

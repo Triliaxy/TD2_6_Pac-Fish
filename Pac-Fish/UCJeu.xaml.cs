@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -41,7 +42,7 @@ namespace Pac_Fish
             {1,1,1,1,1,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,1,1,1,0,1,1,0,1,1,1,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,0,0,0,0,0,0,0,0,0,0,1,1,2,1,1,1,1,1,1},
-            {1,1,1,1,1,1,2,1,1,0,1,1,1,1,1,1,1,1,0,1,1,2,1,1,1,1,1,1},
+            {1,1,1,1,1,1,2,1,1,0,1,1,1,0,0,1,1,1,0,1,1,2,1,1,1,1,1,1},
             {1,1,1,1,1,1,2,1,1,0,1,0,0,0,0,0,0,1,0,1,1,2,1,1,1,1,1,1},
             {0,0,0,0,0,0,2,0,0,0,1,0,0,0,0,0,0,1,0,0,0,2,0,0,0,0,0,0},
             {1,1,1,1,1,1,2,1,1,0,1,0,0,0,0,0,0,1,0,1,1,2,1,1,1,1,1,1},
@@ -217,44 +218,56 @@ namespace Pac_Fish
         {
             imgPoisson.Width = tileSize;
             imgPoisson.Height = tileSize;
+            popcat1.Width = tileSize;
+            popcat1.Height = tileSize;
+            popcat2.Width = tileSize;
+            popcat2.Height = tileSize;
+            popcat3.Width = tileSize;
+            popcat3.Height = tileSize;
+            popcat4.Width = tileSize;
+            popcat4.Height = tileSize;
+            popcat5.Width = tileSize;
+            popcat5.Height = tileSize;
+            popcat6.Width = tileSize;
+            popcat6.Height = tileSize;
 
             int rows = maze.GetLength(0);
             int cols = maze.GetLength(1);
 
-            int startRow = Math.Max(0, rows - 2);
-            int centerCol = cols / 2;
+            int startingPositionX = 8;
+            int startingPositionY = 14;
 
-            int cellX = centerCol;
-            int cellY = startRow;
-            bool found = false;
 
-            for (int y = startRow; y >= 0 && !found; y--)
-            {
-                for (int offset = 0; offset <= cols / 2 && !found; offset++)
-                {
-                    int left = centerCol - offset;
-                    int right = centerCol + offset;
+            Canvas.SetLeft(imgPoisson, startingPositionX * tileSize);
+            Canvas.SetTop(imgPoisson, startingPositionY * tileSize);
 
-                    if (left >= 0 && maze[y, left] != 1)
-                    {
-                        cellX = left;
-                        cellY = y;
-                        found = true;
-                        break;
-                    }
+            Canvas.SetLeft(popcat1, 11 * tileSize);
+            Canvas.SetTop(popcat1, 13 * tileSize);
 
-                    if (right < cols && maze[y, right] != 1)
-                    {
-                        cellX = right;
-                        cellY = y;
-                        found = true;
-                        break;
-                    }
-                }
-            }
+            Canvas.SetLeft(popcat2, 12 * tileSize);
+            Canvas.SetTop(popcat2, 15 * tileSize);
 
-            Canvas.SetLeft(imgPoisson, cellX * tileSize);
-            Canvas.SetTop(imgPoisson, cellY * tileSize);
+            Canvas.SetLeft(popcat3, 13 * tileSize);
+            Canvas.SetTop(popcat3, 14 * tileSize);
+
+            Canvas.SetLeft(popcat4, 14 * tileSize);
+            Canvas.SetTop(popcat4, 14 * tileSize);
+
+            Canvas.SetLeft(popcat5, 15 * tileSize);
+            Canvas.SetTop(popcat5, 15 * tileSize);
+
+            Canvas.SetLeft(popcat6, 16 * tileSize);
+            Canvas.SetTop(popcat6, 13 * tileSize);
+
+
+            //FAIRE DE MÊME POUR POSITIONNER LES CHATS
+
+
+
+
+
+
+
 
             try
             {

@@ -28,6 +28,7 @@ namespace Pac_Fish
         public MainWindow()
         {
             InitializeComponent();
+            ResizeMode = ResizeMode.NoResize; // empêche le redimensionnement de la fenêtre
             AfficheDemarrage();
         }
 
