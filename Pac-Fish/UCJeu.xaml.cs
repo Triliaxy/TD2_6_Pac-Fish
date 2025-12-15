@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -126,16 +127,7 @@ namespace Pac_Fish
                     }
                     else if (maze[y, x] == 2)
                     {
-                        var pellet = new Ellipse
-                        {
-                            Width = 8,
-                            Height = 8,
-                            Fill = Brushes.Gold
-                        };
-                        double left = x * tileSize + 11;
-                        double top = y * tileSize + 11;
-                        Canvas.SetLeft(pellet, left);
-                        Canvas.SetTop(pellet, top);
+                        var pellet = CreateBubble(x, y);
                         MazeCanvas.Children.Add(pellet);
 
                         // Enregistre l'ellipse dans la map pour accès rapide
@@ -149,6 +141,51 @@ namespace Pac_Fish
                     }
                 }
             }
+        }
+
+        private Ellipse CreateBubble(int x, int y)
+        {
+            // taille proportionnelle à la case
+            double size = Math.Max(8, tileSize * 0.4);
+
+            var bubble = new Ellipse
+            {
+                Width = size,
+                Height = size,
+                Stroke = Brushes.White,
+                StrokeThickness = 1,
+                Opacity = 0.95
+            };
+
+            // Remplissage radial pour effet "bulle"
+            var brush = new RadialGradientBrush
+            {
+                GradientOrigin = new Point(0.35, 0.35),
+                Center = new Point(0.35, 0.35),
+                RadiusX = 0.8,
+                RadiusY = 0.8
+            };
+            brush.GradientStops.Add(new GradientStop(Color.FromArgb(220, 255, 255, 255), 0.0));      // centre lumineux
+            brush.GradientStops.Add(new GradientStop(Color.FromArgb(160, 180, 220, 255), 0.6));      // léger bleu
+            brush.GradientStops.Add(new GradientStop(Color.FromArgb(110, 120, 180, 255), 1.0));      // bord bleuté
+            bubble.Fill = brush;
+
+            // Ombre légère pour donner du volume
+            bubble.Effect = new DropShadowEffect
+            {
+                Color = Colors.LightSkyBlue,
+                BlurRadius = 6,
+                ShadowDepth = 0,
+                Opacity = 0.5
+            };
+
+            // Centre la bulle dans la case
+            double left = x * tileSize + (tileSize - size) / 2.0;
+            double top = y * tileSize + (tileSize - size) / 2.0;
+            Canvas.SetLeft(bubble, left);
+            Canvas.SetTop(bubble, top);
+
+            return bubble;
         }
 
         private void InitializePlayerSizeAndPosition()
@@ -337,16 +374,7 @@ namespace Pac_Fish
 
                     if (!pelletMap.ContainsKey((x, y)))
                     {
-                        var pellet = new Ellipse
-                        {
-                            Width = 8,
-                            Height = 8,
-                            Fill = Brushes.Gold
-                        };
-                        double left = x * tileSize + 11;
-                        double top = y * tileSize + 11;
-                        Canvas.SetLeft(pellet, left);
-                        Canvas.SetTop(pellet, top);
+                        var pellet = CreateBubble(x, y);
                         MazeCanvas.Children.Add(pellet);
                         pelletMap[(x, y)] = pellet;
                     }
