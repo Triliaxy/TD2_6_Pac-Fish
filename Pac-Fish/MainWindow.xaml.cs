@@ -106,6 +106,12 @@ namespace Pac_Fish
             }
         }
 
+        public void AfficheFinPartie() //affiche la page de fin de partie
+        {
+            UCFinPartie uc = new UCFinPartie();
+            ZoneJeu.Content = uc;
+        }
+
         private RoutedEventHandler Fermer() //ferme l'application
         {
             return (sender, e) => { Application.Current.Shutdown(); }; //trouver la signification de la ligne de pourquoi ça se ferme avec ça
