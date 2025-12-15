@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
@@ -22,6 +15,16 @@ namespace Pac_Fish
     /// </summary>
     public partial class UCJeu : UserControl
     {
+        // Map des pellets pour accès O(1) lors de la consommation
+        private readonly Dictionary<(int X, int Y), Ellipse> pelletMap = new();
+
+        // Positions initiales des pellets (capturées au premier DrawMaze)
+        private readonly List<(int X, int Y)> initialPelletPositions = new();
+
+        // facteur de réduction de l'intervalle (ex: 0.9 = +10% de vitesse)
+        private const double IntervalReductionFactor = 0.9;
+        private const double MinIntervalMs = 30;
+
         // 0 = chemin vide, 1 = mur, 2 = points
         public static int[,] maze =
         {
@@ -57,7 +60,6 @@ namespace Pac_Fish
             {1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1},
             {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
         };
-        //todo : logique de jeu + génération logique
 
         private int tileSize = 30;
 
@@ -69,15 +71,9 @@ namespace Pac_Fish
         private int score = 0;
         private TextBlock scoreText;
 
-        // Map des pellets pour accès O(1) lors de la consommation
-        private readonly Dictionary<(int X, int Y), Ellipse> pelletMap = new();
-
         public UCJeu()
         {
             InitializeComponent();
-
-            //string nomFichierImage = $"pack://application:,,,/sprites/{MainWindow.Perso}.gif"; //plus utilisé 
-            //imgPoisson.Source = new BitmapImage(new Uri(nomFichierImage));
 
             DrawMaze();
 
@@ -107,7 +103,11 @@ namespace Pac_Fish
 
         void DrawMaze()
         {
-            // utilisation du champ tileSize
+            // sécurité : si le canvas n'est pas encore initialisé on quitte
+            if (MazeCanvas == null) return;
+
+            // Conserver les éléments déjà présents (imgPoisson, scoreText) : on n'efface rien globalement.
+            // Dessine murs et pellets ; n'ajoute les positions initiales qu'une seule fois.
             for (int y = 0; y < maze.GetLength(0); y++)
             {
                 for (int x = 0; x < maze.GetLength(1); x++)
@@ -140,6 +140,12 @@ namespace Pac_Fish
 
                         // Enregistre l'ellipse dans la map pour accès rapide
                         pelletMap[(x, y)] = pellet;
+
+                        // Enregistre la position initiale si pas déjà connue
+                        if (!initialPelletPositions.Contains((x, y)))
+                        {
+                            initialPelletPositions.Add((x, y));
+                        }
                     }
                 }
             }
@@ -212,14 +218,6 @@ namespace Pac_Fish
 
         Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCanvas.Children.
         */
-        /*
-Timer de déplacement : déplace l'image du poisson selon la direction courante,
-vérifie si la nouvelle position correspond à une cellule contenant un pellet (2),
-gère la consommation du pellet via EatPelletAt (mise à 0 dans le tableau), la suppression graphique
-de l'ellipse correspondante et la mise à jour du score.
-
-Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCanvas.Children.
-*/
         private void MoveTimer_Tick(object? sender, EventArgs e)
         {
             // déplace une seule fois par tick si une direction est active
@@ -261,7 +259,6 @@ Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCa
             // autorise le wrap vers l'autre bord si la cellule côté opposé (même Y) n'est pas un mur.
             if ((targetCellX < 0 || targetCellX >= cols) && (currentDirection == Direction.Left || currentDirection == Direction.Right))
             {
-                // cellule opposée (wrap)
                 int wrapX = (targetCellX + cols) % cols;
 
                 // n'autorise le wrap que si la cellule courante n'est pas un mur et la cellule wrap n'est pas un mur
@@ -299,7 +296,6 @@ Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCa
             EatPelletAt(targetCellX, targetCellY);
         }
 
-
         private void EatPelletAt(int cellX, int cellY)
         {
             if (maze[cellY, cellX] != 2) return;
@@ -321,6 +317,58 @@ Optimisation : on utilise pelletMap pour éviter les recherches LINQ dans MazeCa
             if (scoreText != null)
             {
                 scoreText.Text = $"Score: {score}";
+            }
+
+            // Si plus aucun pellet, on réinitialise la map de pellets et on augmente la vitesse
+            if (pelletMap.Count == 0)
+            {
+                ResetPelletsAndIncreaseSpeed();
+            }
+        }
+
+        private void ResetPelletsAndIncreaseSpeed()
+        {
+            // Remet la donnée logique et re-crée visuellement les pellets
+            foreach (var (x, y) in initialPelletPositions)
+            {
+                if (maze[y, x] != 1)
+                {
+                    maze[y, x] = 2;
+
+                    if (!pelletMap.ContainsKey((x, y)))
+                    {
+                        var pellet = new Ellipse
+                        {
+                            Width = 8,
+                            Height = 8,
+                            Fill = Brushes.Gold
+                        };
+                        double left = x * tileSize + 11;
+                        double top = y * tileSize + 11;
+                        Canvas.SetLeft(pellet, left);
+                        Canvas.SetTop(pellet, top);
+                        MazeCanvas.Children.Add(pellet);
+                        pelletMap[(x, y)] = pellet;
+                    }
+                }
+            }
+
+            // Augmente la vitesse : réduit l'intervalle du timer (cap min)
+            if (moveTimer != null)
+            {
+                double currentMs = moveTimer.Interval.TotalMilliseconds;
+                double newMs = Math.Max(MinIntervalMs, currentMs * IntervalReductionFactor);
+                moveTimer.Interval = TimeSpan.FromMilliseconds(newMs);
+
+                // Optionnel : mettre à jour MainWindow.MoveIntervalMs si persisté globalement
+                try
+                {
+                    MainWindow.MoveIntervalMs = (int)newMs;
+                }
+                catch
+                {
+                    // ignore si la propriété n'existe pas ou n'est pas accessible
+                }
             }
         }
 
