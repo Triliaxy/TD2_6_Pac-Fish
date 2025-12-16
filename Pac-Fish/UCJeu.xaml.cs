@@ -102,7 +102,9 @@ namespace Pac_Fish
 
         // Score
         private int currentScore = 0;
+        private int bestScore = 0;
         private TextBlock scoreDisplay;
+        private TextBlock bestScoreDisplay;
 
         // Brushes / effets réutilisables
         private readonly LinearGradientBrush wallFillBrush;
@@ -152,6 +154,9 @@ namespace Pac_Fish
             // Initialisation
             RenderMazeGrid();
             SetupCharacters();
+            
+            bestScore = BestScoreManager.LoadBestScore();
+
             InitializeScoreDisplay();
 
             // Timer jeu principal
@@ -164,6 +169,7 @@ namespace Pac_Fish
             powerModeTimer.Tick += (_, __) => DeactivatePowerMode();
         }
 
+        // prépare et ajoute le TextBlock de score
         // Score UI
         private void InitializeScoreDisplay()
         {
@@ -173,6 +179,16 @@ namespace Pac_Fish
             Canvas.SetLeft(scoreDisplay, 6);
             Canvas.SetTop(scoreDisplay, 6);
             MazeCanvas.Children.Add(scoreDisplay);
+
+            bestScoreDisplay = new TextBlock
+            {
+                Foreground = Brushes.Gold,
+                FontSize = 16,
+                Text = $"Meilleur: {bestScore}"
+            };
+            Canvas.SetLeft(bestScoreDisplay, 6);
+            Canvas.SetTop(bestScoreDisplay, 26); // Positionné 20px plus bas
+            MazeCanvas.Children.Add(bestScoreDisplay);
         }
 
         // Dessin labyrinthe + collectibles
@@ -361,6 +377,19 @@ namespace Pac_Fish
                             mw.AfficheFinPartie();
                         }
                     }
+                    gameLoopTimer.Stop();
+                    //Sauvegarder le score à chaque modification
+                    //ScoreManager.SaveScore(currentScore);
+
+                    if (currentScore > bestScore)
+                    {
+                        bestScore = currentScore;
+                        BestScoreManager.SaveBestScore(bestScore);
+                    }
+                    if (Application.Current.MainWindow is MainWindow mw)
+                    {
+                        mw.AfficheFinPartie();
+                    }
                     break;
                 }
             }
@@ -541,6 +570,20 @@ namespace Pac_Fish
             powerModeTimer.Interval = PowerModeDuration;
             powerModeTimer.Start();
         }
+        private void TryToEatPellet(int cellColumnIndex, int cellRowIndex)
+        {
+            if (mazeGrid[cellRowIndex, cellColumnIndex] != 2) return;
+
+            mazeGrid[cellRowIndex, cellColumnIndex] = 0;
+            currentScore += 10;
+            
+            
+
+            if (pelletDictionary.TryGetValue((cellColumnIndex, cellRowIndex), out var pelletVisual))
+            {
+                MazeCanvas.Children.Remove(pelletVisual);
+                pelletDictionary.Remove((cellColumnIndex, cellRowIndex));
+            }
 
         private void DeactivatePowerMode()
         {
@@ -557,6 +600,17 @@ namespace Pac_Fish
         private void UpdateScoreUI()
         {
             if (scoreDisplay != null)
+            if (currentScore > bestScore) //gestion du meilleur score
+            {
+                bestScore = currentScore;
+                BestScoreManager.SaveBestScore(bestScore);
+                if (bestScoreDisplay != null)
+                {
+                    bestScoreDisplay.Text = $"Meilleur: {bestScore}";
+                }
+            }
+
+            if (pelletDictionary.Count == 0)
             {
                 scoreDisplay.Text = $"Score: {currentScore}";
             }

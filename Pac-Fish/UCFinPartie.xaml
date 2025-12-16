@@ -6,7 +6,10 @@
              xmlns:local="clr-namespace:Pac_Fish"
              mc:Ignorable="d" 
              d:DesignHeight="964" d:DesignWidth="854">
-    <Grid>
-            
+    <Grid Background="Black">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="GAME OVER" Foreground="Red" FontSize="72" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,50"/>
+            <Button x:Name="BtnRetourMenu" Content="Retour au menu" Click="BtnRetourMenu_Click" Width="200" Height="50" FontSize="20"/>
+        </StackPanel>
     </Grid>
 </UserControl>

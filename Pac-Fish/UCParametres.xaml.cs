@@ -46,6 +46,12 @@ namespace Pac_Fish
                 MainWindow.steve = true;
             }
         }
+
+        private void Btn_ResetScore_Click(object sender, RoutedEventArgs e)
+        {
+            BestScoreManager.SaveBestScore(0);
+            MessageBox.Show("Le meilleur score a été réinitialisé à 0.", "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
     
     }
 }
