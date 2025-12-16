@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -154,7 +152,7 @@ namespace Pac_Fish
             // Initialisation
             RenderMazeGrid();
             SetupCharacters();
-            
+
             bestScore = BestScoreManager.LoadBestScore();
 
             InitializeScoreDisplay();
@@ -367,29 +365,27 @@ namespace Pac_Fish
                         currentScore += EnemyEatPoints;
                         UpdateScoreUI();
                         SendEnemyToSpawn(i);
-                        // continue la boucle, pas de fin de partie
+                        // On continue la boucle, pas de fin de partie
                     }
                     else
                     {
+                        // Fin de partie
                         gameLoopTimer.Stop();
-                        if (Application.Current.MainWindow is MainWindow mw)
+                        powerModeTimer.Stop();
+
+                        // Sauvegarde le meilleur score si nécessaire
+                        if (currentScore > bestScore)
                         {
-                            mw.AfficheFinPartie();
+                            BestScoreManager.SaveBestScore(currentScore);
+                        }
+
+                        // Affiche l'écran de fin
+                        if (Application.Current.MainWindow is MainWindow mainWindow)
+                        {
+                            mainWindow.AfficheFinPartie();
                         }
                     }
-                    gameLoopTimer.Stop();
-                    //Sauvegarder le score à chaque modification
-                    //ScoreManager.SaveScore(currentScore);
-
-                    if (currentScore > bestScore)
-                    {
-                        bestScore = currentScore;
-                        BestScoreManager.SaveBestScore(bestScore);
-                    }
-                    if (Application.Current.MainWindow is MainWindow mw)
-                    {
-                        mw.AfficheFinPartie();
-                    }
+                    // Une seule collision par tick est suffisante
                     break;
                 }
             }
@@ -489,7 +485,7 @@ namespace Pac_Fish
 
                 if (possibleDirections.Count == 0)
                 {
-                    possibleDirections = new List<Direction> { oppositeDirection };
+                    possibleDirections.Add(oppositeDirection);
                 }
 
                 var chosenDirection = possibleDirections[randomGenerator.Next(possibleDirections.Count)];
@@ -510,14 +506,14 @@ namespace Pac_Fish
 
         private static Direction GetOppositeDirection(Direction lastDirection)
         {
-            switch (lastDirection)
+            return lastDirection switch
             {
-                case Direction.Up: return Direction.Down;
-                case Direction.Down: return Direction.Up;
-                case Direction.Left: return Direction.Right;
-                case Direction.Right: return Direction.Left;
-                default: return Direction.None;
-            }
+                Direction.Up => Direction.Down,
+                Direction.Down => Direction.Up,
+                Direction.Left => Direction.Right,
+                Direction.Right => Direction.Left,
+                _ => Direction.None,
+            };
         }
 
         private void TryConsumeItems(int cellColumnIndex, int cellRowIndex)
@@ -563,27 +559,10 @@ namespace Pac_Fish
             }
 
             // (Ré)initialise le compte à rebours
-            if (powerModeTimer.IsEnabled)
-            {
-                powerModeTimer.Stop();
-            }
+            powerModeTimer.Stop();
             powerModeTimer.Interval = PowerModeDuration;
             powerModeTimer.Start();
         }
-        private void TryToEatPellet(int cellColumnIndex, int cellRowIndex)
-        {
-            if (mazeGrid[cellRowIndex, cellColumnIndex] != 2) return;
-
-            mazeGrid[cellRowIndex, cellColumnIndex] = 0;
-            currentScore += 10;
-            
-            
-
-            if (pelletDictionary.TryGetValue((cellColumnIndex, cellRowIndex), out var pelletVisual))
-            {
-                MazeCanvas.Children.Remove(pelletVisual);
-                pelletDictionary.Remove((cellColumnIndex, cellRowIndex));
-            }
 
         private void DeactivatePowerMode()
         {
@@ -599,20 +578,20 @@ namespace Pac_Fish
 
         private void UpdateScoreUI()
         {
+            // Met à jour le score courant
             if (scoreDisplay != null)
-            if (currentScore > bestScore) //gestion du meilleur score
+            {
+                scoreDisplay.Text = $"Score: {currentScore}";
+            }
+
+            // Gestion du meilleur score (high score)
+            if (currentScore > bestScore)
             {
                 bestScore = currentScore;
-                BestScoreManager.SaveBestScore(bestScore);
                 if (bestScoreDisplay != null)
                 {
                     bestScoreDisplay.Text = $"Meilleur: {bestScore}";
                 }
-            }
-
-            if (pelletDictionary.Count == 0)
-            {
-                scoreDisplay.Text = $"Score: {currentScore}";
             }
         }
 
@@ -658,8 +637,11 @@ namespace Pac_Fish
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            Application.Current.MainWindow.KeyDown += canvasJeu_KeyDown;
-            Application.Current.MainWindow.KeyUp += canvasJeu_KeyUp;
+            if (Application.Current.MainWindow != null)
+            {
+                Application.Current.MainWindow.KeyDown += canvasJeu_KeyDown;
+                Application.Current.MainWindow.KeyUp += canvasJeu_KeyUp;
+            }
         }
 
         private void canvasJeu_KeyUp(object sender, KeyEventArgs e)
