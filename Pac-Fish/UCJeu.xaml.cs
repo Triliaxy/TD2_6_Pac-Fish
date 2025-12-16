@@ -7,6 +7,10 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Microsoft.Win32;
+using System.IO;
+using System.Text.Json;
+
 
 namespace Pac_Fish
 {
@@ -117,9 +121,59 @@ namespace Pac_Fish
 
         private readonly DropShadowEffect vulnerableEnemyGlow;
 
+        private MediaPlayer mediaPlayer = new MediaPlayer(); // Initialisation d'un MediaPlayer pour charger la musique de jeu en .mp3
+
+        private bool MusiqueDeFondLoaded = false; // Indicateur de chargement de la musique
+        private void InitPlayerMusiqueDeFond()
+        {
+            string musicPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "musics", "music.mp3");
+            if (File.Exists(musicPath))
+            {
+                mediaPlayer.Open(new Uri(musicPath, UriKind.Absolute));
+            }
+
+            mediaPlayer.Volume = 0.4;
+
+            // Signaler le chargement est terminé
+            mediaPlayer.MediaOpened += (s, e) =>
+            {
+                MusiqueDeFondLoaded = true;
+                mediaPlayer.Play();
+            };
+
+            mediaPlayer.MediaFailed += (s, e) =>
+            {
+                System.Diagnostics.Debug.WriteLine($"Erreur chargement musique: {e.ErrorException}");
+            };
+
+            // Relancer la musique quand elle termine
+            mediaPlayer.MediaEnded += (s, e) =>
+            {
+                mediaPlayer.Stop();
+                mediaPlayer.Position = TimeSpan.Zero;
+                mediaPlayer.Play();
+            };
+        }
+
+        private void LancerMusiqueDeFond()
+        {
+            mediaPlayer.Stop(); // Retour au début de la boucle si déjà en cours
+            mediaPlayer.Play(); // Lancer la lecture
+        }
+
+        private void StopperMusiqueDeFond()
+        {
+            mediaPlayer.Stop(); // Arrêter la lecture
+        }
+
+
         public UCJeu()
         {
             InitializeComponent();
+
+            // Initialisation du lecteur audio pour la musique de fond
+            InitPlayerMusiqueDeFond();
+            // LancerMusiqueDeFond(); // La lecture démarre automatiquement via MediaOpened
 
             // Prépare brushes/effets une fois
             wallFillBrush = CreateWallGradientBrush(); wallFillBrush.Freeze();
@@ -372,6 +426,7 @@ namespace Pac_Fish
                         // Fin de partie
                         gameLoopTimer.Stop();
                         powerModeTimer.Stop();
+                        StopperMusiqueDeFond();
 
                         // Sauvegarde le meilleur score si nécessaire
                         if (currentScore > bestScore)
