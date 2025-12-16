@@ -78,7 +78,9 @@ namespace Pac_Fish
 
         // Score
         private int currentScore = 0;
+        private int bestScore = 0;
         private TextBlock scoreDisplay;
+        private TextBlock bestScoreDisplay;
 
         // Indicateur pour ne dessiner les murs/pellets qu'une seule fois
         // private bool isMazeAlreadyDrawn = false;
@@ -125,6 +127,9 @@ namespace Pac_Fish
             // Gestion initiale
             RenderMazeGrid(); // ne dessinera qu'une fois grâce à mazeDrawn
             SetupCharacters();
+            
+            bestScore = BestScoreManager.LoadBestScore();
+
             InitializeScoreDisplay();
 
             // configure le timer de déplacement selon la variable globale
@@ -136,7 +141,7 @@ namespace Pac_Fish
             gameLoopTimer.Start();
         }
 
-        // Prépare et ajoute le TextBlock de score
+        // prépare et ajoute le TextBlock de score
         private void InitializeScoreDisplay()
         {
             if (scoreDisplay != null) return;
@@ -150,6 +155,16 @@ namespace Pac_Fish
             Canvas.SetLeft(scoreDisplay, 6);
             Canvas.SetTop(scoreDisplay, 6);
             MazeCanvas.Children.Add(scoreDisplay);
+
+            bestScoreDisplay = new TextBlock
+            {
+                Foreground = Brushes.Gold,
+                FontSize = 16,
+                Text = $"Meilleur: {bestScore}"
+            };
+            Canvas.SetLeft(bestScoreDisplay, 6);
+            Canvas.SetTop(bestScoreDisplay, 26); // Positionné 20px plus bas
+            MazeCanvas.Children.Add(bestScoreDisplay);
         }
 
         // Dessine murs et pellets (exécuté une seule fois)
@@ -317,6 +332,14 @@ namespace Pac_Fish
                 if (playerColumnIndex == enemyColumnIndex && playerRowIndex == enemyRowIndex)
                 {
                     gameLoopTimer.Stop();
+                    //Sauvegarder le score à chaque modification
+                    //ScoreManager.SaveScore(currentScore);
+
+                    if (currentScore > bestScore)
+                    {
+                        bestScore = currentScore;
+                        BestScoreManager.SaveBestScore(bestScore);
+                    }
                     if (Application.Current.MainWindow is MainWindow mw)
                     {
                         mw.AfficheFinPartie();
@@ -466,6 +489,8 @@ namespace Pac_Fish
 
             mazeGrid[cellRowIndex, cellColumnIndex] = 0;
             currentScore += 10;
+            
+            
 
             if (pelletDictionary.TryGetValue((cellColumnIndex, cellRowIndex), out var pelletVisual))
             {
@@ -476,6 +501,16 @@ namespace Pac_Fish
             if (scoreDisplay != null)
             {
                 scoreDisplay.Text = $"Score: {currentScore}";
+            }
+
+            if (currentScore > bestScore) //gestion du meilleur score
+            {
+                bestScore = currentScore;
+                BestScoreManager.SaveBestScore(bestScore);
+                if (bestScoreDisplay != null)
+                {
+                    bestScoreDisplay.Text = $"Meilleur: {bestScore}";
+                }
             }
 
             if (pelletDictionary.Count == 0)

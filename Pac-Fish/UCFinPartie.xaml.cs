@@ -24,5 +24,13 @@ namespace Pac_Fish
         {
             InitializeComponent();
         }
+
+        private void BtnRetourMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (Application.Current.MainWindow is MainWindow mw)
+            {
+                mw.RetourAuMenu();
+            }
+        }
     }
 }
