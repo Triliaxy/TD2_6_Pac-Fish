@@ -46,9 +46,19 @@ namespace Pac_Fish
 
             uc.butJouer.Click += AfficheChoixSkin; //quand on clique sur le bouton jouer, on affiche le choix des skins
 
+            uc.butCredits.Click += AfficheCredits; //quand on clique sur le bouton crédits, on affiche les crédits
+
             uc.butPara.Click += AfficheParametres; //quand on clique sur le bouton paramètres, on affiche les paramètres
 
             uc.butQuit.Click += Fermer(); //quand on clique sur le bouton quitter, on ferme l'application
+        }
+
+        private void AfficheCredits(object sender, RoutedEventArgs e)
+        {
+            UCCredits uc = new UCCredits();
+            ZoneJeu.Content = uc;
+
+            uc.butRetourCredits.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
         }
 
         private void AfficheChoixSkin(object sender, RoutedEventArgs e) //affiche la page de choix des skins
