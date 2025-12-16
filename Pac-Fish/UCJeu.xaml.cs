@@ -135,19 +135,14 @@ namespace Pac_Fish
             mediaPlayer.Volume = 0.4;
 
             // Signaler le chargement est terminé
-            mediaPlayer.MediaOpened += (s, e) =>
+            mediaPlayer.MediaOpened += (sender, eventArgs) =>
             {
                 MusiqueDeFondLoaded = true;
                 mediaPlayer.Play();
             };
 
-            mediaPlayer.MediaFailed += (s, e) =>
-            {
-                System.Diagnostics.Debug.WriteLine($"Erreur chargement musique: {e.ErrorException}");
-            };
-
             // Relancer la musique quand elle termine
-            mediaPlayer.MediaEnded += (s, e) =>
+            mediaPlayer.MediaEnded += (sender, eventArgs) =>
             {
                 mediaPlayer.Stop();
                 mediaPlayer.Position = TimeSpan.Zero;
@@ -155,11 +150,11 @@ namespace Pac_Fish
             };
         }
 
-        private void LancerMusiqueDeFond()
-        {
-            mediaPlayer.Stop(); // Retour au début de la boucle si déjà en cours
-            mediaPlayer.Play(); // Lancer la lecture
-        }
+        //private void LancerMusiqueDeFond()
+        //{
+        //    mediaPlayer.Stop(); // Retour au début de la boucle si déjà en cours
+        //    mediaPlayer.Play(); // Lancer la lecture
+        //}
 
         private void StopperMusiqueDeFond()
         {
