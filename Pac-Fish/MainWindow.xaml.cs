@@ -103,11 +103,15 @@ namespace Pac_Fish
             ZoneJeu.Content = uc;
         }
 
+        public void RetourAuMenu()
+        {
+            AfficheAcceuil(null, null);
+        }
+
         private RoutedEventHandler Fermer() //ferme l'application
         {
             return (sender, e) => { Application.Current.Shutdown(); }; //trouver la signification de la ligne de pourquoi ça se ferme avec ça
         }
-
 
     }
 }
