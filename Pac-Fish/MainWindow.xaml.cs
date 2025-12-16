@@ -46,10 +46,6 @@ namespace Pac_Fish
 
             uc.butJouer.Click += AfficheChoixSkin; //quand on clique sur le bouton jouer, on affiche le choix des skins
 
-            uc.butDiff.Click += AfficheChoixDifficulte; //quand on clique sur le bouton difficulté, on affiche le choix des difficultés
-
-            uc.butBoutique.Click += AfficheBoutique; //quand on clique sur le bouton boutique, on affiche la boutique
-
             uc.butPara.Click += AfficheParametres; //quand on clique sur le bouton paramètres, on affiche les paramètres
 
             uc.butQuit.Click += Fermer(); //quand on clique sur le bouton quitter, on ferme l'application
@@ -71,21 +67,6 @@ namespace Pac_Fish
             ZoneJeu.Content = uc;
         }
 
-        private void AfficheChoixDifficulte(object sender, RoutedEventArgs e) //affiche la page de choix des difficultés
-        {
-            UCDifficultes uc = new UCDifficultes();
-            ZoneJeu.Content = uc;
-
-            uc.butRetourDiff.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
-            uc.butValiderDiff.Click += AfficheAcceuil; //quand on clique sur le bouton valider, on affiche la page d'acceuil
-        }
-        private void AfficheBoutique(object sender, RoutedEventArgs e) //affiche la page de la boutique
-        {
-            UCBoutique uc = new UCBoutique();
-            ZoneJeu.Content = uc;
-
-            uc.butRetourBoutique.Click += AfficheAcceuil; //quand on clique sur le bouton retour, on affiche la page d'acceuil
-        }
         private void AfficheParametres(object sender, RoutedEventArgs e) //affiche la page des paramètres
         {
             UCParametres uc = new UCParametres();
