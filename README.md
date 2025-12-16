@@ -2,6 +2,7 @@
 
 Note : Triliaxy est Rémy GONZALEZ PAULO
 TheoM74 est Théo MAUHIN
+Alexandre Sella est Théo MAUHIN suite à un problème de session avec les fichiers temporaires
 
 TODO :
   - Trouver fond écran
