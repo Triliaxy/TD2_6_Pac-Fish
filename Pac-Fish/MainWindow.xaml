@@ -5,7 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Pac_Fish"
         mc:Ignorable="d"
-        Title="Pac-fish" Height="964" Width="854" Background="Black">
+        Title="Pac-fish" Height="964" Width="854">
+    <Window.Background>
+        <ImageBrush ImageSource="/Fond-écran.jpg"/>
+    </Window.Background>
     <Grid Background="Black">
 
     </Grid>

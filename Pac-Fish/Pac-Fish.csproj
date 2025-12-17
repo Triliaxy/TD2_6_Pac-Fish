@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Fond-écran.jpg" />
     <None Remove="musics\music.mp3" />
     <None Remove="sprites\MaxwellTheCat.gif" />
     <None Remove="sprites\popcat_gif.gif" />
@@ -23,6 +24,7 @@
     <Content Include="musics\music.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Fond-écran.jpg" />
     <Resource Include="sprites\MaxwellTheCat.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
