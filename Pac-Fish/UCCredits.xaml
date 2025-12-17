@@ -10,7 +10,7 @@
     <Grid>
         <Button x:Name="butRetourCredits" Content="Retour" HorizontalAlignment="Left" Margin="83,859,0,0" VerticalAlignment="Top" Height="53" Width="138"/>
         <Border BorderBrush="Black" BorderThickness="1"/>
-        <TextBlock x:Name="Credits" TextWrapping="Wrap" Margin="101,43,331,402" Background="White" FontSize="36"><Run Text="Merci d'avoir joué ! Ce code à été réalisé en deux semaines, attendez-vous peut-être à des mises à jour si l'envie nous en prend. Fait par MAUHIN Théo et GONZALEZ PAULO Rémy"/><LineBreak/><Run/><LineBreak/><Run Text="Musique"/><Run Language="fr-fr" Text=" : Toby Fox"/></TextBlock>
+        <TextBlock x:Name="Credits" TextWrapping="Wrap" Margin="101,43,331,402" FontSize="36"><Run Text="Merci d'avoir joué ! Ce code à été réalisé en deux semaines, attendez-vous peut-être à des mises à jour si l'envie nous en prend. Fait par MAUHIN Théo et GONZALEZ PAULO Rémy"/><LineBreak/><Run/><LineBreak/><Run Text="Musique"/><Run Language="fr-fr" Text=" : Toby Fox"/></TextBlock>
         <Image x:Name="imgPoisson" gif:ImageBehavior.AnimatedSource="/sprites/MaxwellTheCat.gif"  Stretch="Fill" Canvas.Left="323" Canvas.Top="269" Margin="336,543,91,52"/>
     </Grid>
 </UserControl>

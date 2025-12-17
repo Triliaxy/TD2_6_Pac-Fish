@@ -8,8 +8,8 @@
              d:DesignHeight="964" d:DesignWidth="854">
     <Grid>
         <Button x:Name="butStart" Content="Compris ! Et blop ! " HorizontalAlignment="Center" Margin="0,354,0,0" VerticalAlignment="Top" Height="36" Width="168"/>
-        <TextBlock x:Name="TW" HorizontalAlignment="Left" Margin="74,24,0,0" TextWrapping="Wrap" Text="Bienvenue, ce jeu peut comporter des des flashs lumineux, si vous êtes photosensible nous vous recommandons d'arrêter le jeu." VerticalAlignment="Top" FontSize="24" Background="#FFFFFCFC"/>
-        <TextBlock x:Name="Regles" HorizontalAlignment="Left" Margin="60,153,0,0" TextWrapping="Wrap" Text="Règles : fuir les chats, ramasser des bulles vous donnera des points, des stéroïdes sont présents vous rendant invincible et capable de manger les chats" VerticalAlignment="Top" FontSize="24" Background="White"/>
+        <TextBlock x:Name="TW" HorizontalAlignment="Left" Margin="74,24,0,0" TextWrapping="Wrap" Text="Bienvenue, ce jeu peut comporter des des flashs lumineux, si vous êtes photosensible nous vous recommandons d'arrêter le jeu." VerticalAlignment="Top" FontSize="24"/>
+        <TextBlock x:Name="Regles" HorizontalAlignment="Left" Margin="60,153,0,0" TextWrapping="Wrap" Text="Règles : fuir les chats, ramasser des bulles vous donnera des points, des stéroïdes sont présents vous rendant invincible et capable de manger les chats" VerticalAlignment="Top" FontSize="24"/>
 
     </Grid>
 </UserControl>
